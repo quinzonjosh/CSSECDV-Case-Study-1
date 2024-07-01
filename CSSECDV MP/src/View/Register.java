@@ -1,6 +1,8 @@
 
 package View;
 
+import javax.swing.JOptionPane;
+
 public class Register extends javax.swing.JPanel {
 
     public Frame frame;
@@ -97,10 +99,43 @@ public class Register extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
-        frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
-        frame.loginNav();
+        String username = usernameFld.getText();
+        String password = passwordFld.getText();
+        String confirmPassword = confpassFld.getText();
+        
+        if(isValidUsername(username)){
+//            frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
+//            frame.loginNav();
+            System.out.println("Registration Successful");
+        }
     }//GEN-LAST:event_registerBtnActionPerformed
 
+    private boolean isValidUsername(String username){
+        if(username.isEmpty()){
+            JOptionPane.showMessageDialog(this, "Please complete the registration form.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } 
+        if(username.length() < 5 || username.length() > 20) {
+            JOptionPane.showMessageDialog(this, "Username must be 5 - 20 characters long.", "Registration Failed", JOptionPane.ERROR_MESSAGE);            
+            return false;
+        } 
+        if(username.contains(" ")){
+            JOptionPane.showMessageDialog(this, "Username must not contain spaces.", "Registration Failed", JOptionPane.ERROR_MESSAGE);            
+            return false;
+        }
+        for(char c : username.toCharArray()){
+            if(!Character.isLetterOrDigit(c) && c != '_' && c != '-' && c != '.'){
+                JOptionPane.showMessageDialog(this, "Username may only contain special characters dots, dashes, and underscores", "Registration Failed", JOptionPane.ERROR_MESSAGE);                                
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private boolean isValidPassword(String password, String confirmPassword){
+        return false;
+    }
+    
     private void backBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backBtnActionPerformed
         frame.loginNav();
     }//GEN-LAST:event_backBtnActionPerformed
