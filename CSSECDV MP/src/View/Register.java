@@ -103,7 +103,7 @@ public class Register extends javax.swing.JPanel {
         String password = passwordFld.getText();
         String confirmPassword = confpassFld.getText();
         
-        if(isValidUsername(username)){
+        if(isValidUsername(username) && isValidPassword(password, confirmPassword)){
 //            frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
 //            frame.loginNav();
             System.out.println("Registration Successful");
@@ -133,7 +133,26 @@ public class Register extends javax.swing.JPanel {
     }
     
     private boolean isValidPassword(String password, String confirmPassword){
-        return false;
+        
+        boolean hasUppercase = !password.equals(password.toLowerCase());
+        boolean hasLowercase = !password.equals(password.toUpperCase());
+        boolean hasDigit = password.matches(".*\\d.*");
+        boolean hasSpecialChar = password.matches(".*[!@#$%^&*()-+=<>?/{}~|].*");
+        
+        if(password.length() < 8 || password.length() > 64){
+            JOptionPane.showMessageDialog(this, "Password must be 8 - 64 characters long.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        if(!hasUppercase || !hasLowercase || !hasDigit || !hasSpecialChar){
+            JOptionPane.showMessageDialog(this, "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        if(!password.equals(confirmPassword)){
+            JOptionPane.showMessageDialog(this, "Password and Confirm Password do not match.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
     }
     
     private void backBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backBtnActionPerformed
