@@ -103,18 +103,22 @@ public class Register extends javax.swing.JPanel {
         String password = passwordFld.getText();
         String confirmPassword = confpassFld.getText();
         
-        if(isValidUsername(username) && isValidPassword(password, confirmPassword)){
+        if(!hasEmptyFields(username, password, confirmPassword) && isValidUsername(username) && isValidPassword(password, confirmPassword)){
 //            frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
 //            frame.loginNav();
             System.out.println("Registration Successful");
         }
     }//GEN-LAST:event_registerBtnActionPerformed
 
-    private boolean isValidUsername(String username){
-        if(username.isEmpty()){
+    private boolean hasEmptyFields(String username, String password, String confirmPassword){
+        if(username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
             JOptionPane.showMessageDialog(this, "Please complete the registration form.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
-            return false;
+            return true;
         } 
+        return false;
+    }
+    
+    private boolean isValidUsername(String username){
         if(username.length() < 5 || username.length() > 20) {
             JOptionPane.showMessageDialog(this, "Username must be 5 - 20 characters long.", "Registration Failed", JOptionPane.ERROR_MESSAGE);            
             return false;
