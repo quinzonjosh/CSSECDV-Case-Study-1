@@ -1,10 +1,21 @@
 
 package View;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class Register extends javax.swing.JPanel {
-
+    
+    
     public Frame frame;
     
     public Register() {
@@ -103,13 +114,72 @@ public class Register extends javax.swing.JPanel {
         String password = passwordFld.getText();
         String confirmPassword = confpassFld.getText();
         
-        if(!hasEmptyFields(username, password, confirmPassword) && isValidUsername(username) && isValidPassword(password, confirmPassword)){
+        if(!hasEmptyFields(username, password, confirmPassword) && 
+                isValidUsername(username) && 
+                isValidPassword(password, confirmPassword) &&
+                !isPasswordPwned(password)){
+            JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
 //            frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
 //            frame.loginNav();
-            System.out.println("Registration Successful");
         }
     }//GEN-LAST:event_registerBtnActionPerformed
 
+    private boolean isPasswordPwned(String password){
+        
+        String hashedPassword = hashPasswordSHA1(password);
+        
+        String prefix = hashedPassword.substring(0,5);
+        String suffix = hashedPassword.substring(5).toUpperCase();
+        
+        try {
+            URL url = new URL("https://api.pwnedpasswords.com/range/" + prefix);
+        
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            
+            BufferedReader input = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String inputLine;
+            
+            while((inputLine  = input.readLine()) != null){
+                if(inputLine.startsWith(suffix)){
+                    input.close();
+                    
+                    JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+                    return true;
+                }
+            }
+            
+            input.close();
+            
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return false;
+    }
+    
+    private String hashPasswordSHA1(String password){
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+        
+            md.update(password.getBytes());
+            
+            byte[] byteData = md.digest();
+            
+            StringBuilder sb = new StringBuilder();
+            for(byte b : byteData){
+                sb.append(String.format("%02x", b));
+            }
+            
+            return sb.toString();
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
     private boolean hasEmptyFields(String username, String password, String confirmPassword){
         if(username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
             JOptionPane.showMessageDialog(this, "Please complete the registration form.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
@@ -141,7 +211,7 @@ public class Register extends javax.swing.JPanel {
         boolean hasUppercase = !password.equals(password.toLowerCase());
         boolean hasLowercase = !password.equals(password.toUpperCase());
         boolean hasDigit = password.matches(".*\\d.*");
-        boolean hasSpecialChar = password.matches(".*[!@#$%^&*()-+=<>?/{}~|].*");
+        boolean hasSpecialChar = password.matches(".*[!@#$%^&*()-+=<>?/{}~|_.].*");
         
         if(password.length() < 8 || password.length() > 64){
             JOptionPane.showMessageDialog(this, "Password must be 8 - 64 characters long.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
