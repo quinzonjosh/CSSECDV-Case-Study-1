@@ -117,16 +117,18 @@ public class Register extends javax.swing.JPanel {
         if(!hasEmptyFields(username, password, confirmPassword) && 
                 isValidUsername(username) && 
                 isValidPassword(password, confirmPassword)){   
-                
-                String hashedPassword = hashPasswordSHA(password, "SHA-1");
-                
-                if(isPasswordPwned(hashedPassword)){
-                    JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
+
+            String hashedPassword = hashPasswordSHA(password, "SHA-1");
+
+            if(isPasswordPwned(hashedPassword)){
+                JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            } else {
+                String finalHashedPassword = hashPasswordSHA(hashedPassword, "SHA-256");
+                System.out.println(finalHashedPassword);
+                JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
 //                    frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
 //                    frame.loginNav();
-                }
+            }
         }
     }//GEN-LAST:event_registerBtnActionPerformed
 
