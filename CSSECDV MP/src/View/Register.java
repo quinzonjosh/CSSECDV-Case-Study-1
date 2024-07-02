@@ -116,18 +116,22 @@ public class Register extends javax.swing.JPanel {
         
         if(!hasEmptyFields(username, password, confirmPassword) && 
                 isValidUsername(username) && 
-                isValidPassword(password, confirmPassword) &&
-                !isPasswordPwned(password)){
-            JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
-//            frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
-//            frame.loginNav();
+                isValidPassword(password, confirmPassword)){   
+                
+                String hashedPassword = hashPasswordSHA(password, "SHA-1");
+                
+                if(isPasswordPwned(hashedPassword)){
+                    JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
+//                    frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
+//                    frame.loginNav();
+                }
         }
     }//GEN-LAST:event_registerBtnActionPerformed
 
-    private boolean isPasswordPwned(String password){
-        
-        String hashedPassword = hashPasswordSHA1(password);
-        
+    private boolean isPasswordPwned(String hashedPassword){
+                
         String prefix = hashedPassword.substring(0,5);
         String suffix = hashedPassword.substring(5).toUpperCase();
         
@@ -142,9 +146,7 @@ public class Register extends javax.swing.JPanel {
             
             while((inputLine  = input.readLine()) != null){
                 if(inputLine.startsWith(suffix)){
-                    input.close();
-                    
-                    JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+                    input.close();                    
                     return true;
                 }
             }
@@ -160,9 +162,9 @@ public class Register extends javax.swing.JPanel {
         return false;
     }
     
-    private String hashPasswordSHA1(String password){
+    private String hashPasswordSHA(String password, String algo){
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            MessageDigest md = MessageDigest.getInstance(algo);
         
             md.update(password.getBytes());
             
