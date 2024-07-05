@@ -118,8 +118,6 @@ public class Register extends javax.swing.JPanel {
                 isValidUsername(username) && 
                 isValidPassword(password, confirmPassword)){   
             
-                // frame.usernameExist(username) having performance issue
-
             String hashedPassword = hashPasswordSHA(password, "SHA-1");
 
             if(isPasswordPwned(hashedPassword)){
@@ -209,6 +207,8 @@ public class Register extends javax.swing.JPanel {
                 return false;
             }
         }
+        
+        // frame.usernameExist(username) having performance issue
         if(frame.usernameExist(username)){
             JOptionPane.showMessageDialog(this, "Username already exist.", "Registration Failed", JOptionPane.ERROR_MESSAGE);                                
         }
