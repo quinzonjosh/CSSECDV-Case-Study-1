@@ -263,7 +263,11 @@ public class Frame extends javax.swing.JFrame {
     public boolean usernameExist(String username){
         return main.sqlite.usernameExist(username);
     }
-
+    
+    public void logAction(String event, String username, String desc, String timestamp){
+        main.sqlite.addLogs(event, username, desc, timestamp);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel Container;
     private javax.swing.JPanel Content;

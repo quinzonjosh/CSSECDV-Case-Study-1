@@ -9,6 +9,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -124,9 +126,12 @@ public class Register extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
             } else {
                 String finalHashedPassword = hashPasswordSHA(hashedPassword, "SHA-256");
-//                System.out.println(finalHashedPassword);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                String date = sdf.format(new Date());
                 JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
-                    frame.registerAction(usernameFld.getText(), finalHashedPassword, confpassFld.getText());
+                
+                frame.registerAction(usernameFld.getText(), finalHashedPassword, confpassFld.getText());
+                frame.logAction("NOTICE", username, "User creation Successful", date);
 //                    frame.loginNav();
             }
         }

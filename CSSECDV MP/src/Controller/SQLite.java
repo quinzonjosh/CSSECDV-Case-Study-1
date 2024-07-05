@@ -159,11 +159,17 @@ public class SQLite {
     }
     
     public void addLogs(String event, String username, String desc, String timestamp) {
-        String sql = "INSERT INTO logs(event,username,desc,timestamp) VALUES('" + event + "','" + username + "','" + desc + "','" + timestamp + "')";
+        String sql = "INSERT INTO logs(event,username,desc,timestamp) VALUES(?, ?, ?, ?)";
         
         try (Connection conn = DriverManager.getConnection(driverURL);
-            Statement stmt = conn.createStatement()){
-            stmt.execute(sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            pstmt.setString(1, event);
+            pstmt.setString(2, username);
+            pstmt.setString(3, desc);
+            pstmt.setString(4, timestamp);
+
+            pstmt.executeUpdate();
         } catch (Exception ex) {
             System.out.print(ex);
         }
@@ -212,8 +218,6 @@ public class SQLite {
                 PreparedStatement pstmt = conn.prepareStatement(sql);){
             
             pstmt.setString(1, username);
-
-            System.out.println("I am being executed.");
             
             ResultSet rs = pstmt.executeQuery();
             
