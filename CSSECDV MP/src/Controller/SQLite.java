@@ -7,6 +7,7 @@ import Model.User;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -197,6 +198,31 @@ public class SQLite {
         }
     }
     
+    public boolean usernameExist(String username){
+        String sql = "SELECT username FROM users WHERE username = ?";
+        
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql);){
+            
+            pstmt.setString(1, username);
+
+            System.out.println("I am being executed.");
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+//                System.out.println("User: " + rs.getString("username") + " exist.");
+                return true;
+            } else {
+//                System.out.println("User DNE");
+            }
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        
+        return false;
+    }
     
     public ArrayList<History> getHistory(){
         String sql = "SELECT id, username, name, stock, timestamp FROM history";

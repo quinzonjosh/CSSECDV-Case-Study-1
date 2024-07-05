@@ -117,6 +117,8 @@ public class Register extends javax.swing.JPanel {
         if(!hasEmptyFields(username, password, confirmPassword) && 
                 isValidUsername(username) && 
                 isValidPassword(password, confirmPassword)){   
+            
+                // frame.usernameExist(username) having performance issue
 
             String hashedPassword = hashPasswordSHA(password, "SHA-1");
 
@@ -124,7 +126,7 @@ public class Register extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
             } else {
                 String finalHashedPassword = hashPasswordSHA(hashedPassword, "SHA-256");
-                System.out.println(finalHashedPassword);
+//                System.out.println(finalHashedPassword);
                 JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
                     frame.registerAction(usernameFld.getText(), finalHashedPassword, confpassFld.getText());
 //                    frame.loginNav();
@@ -206,6 +208,9 @@ public class Register extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Username may only contain special characters dots, dashes, and underscores", "Registration Failed", JOptionPane.ERROR_MESSAGE);                                
                 return false;
             }
+        }
+        if(frame.usernameExist(username)){
+            JOptionPane.showMessageDialog(this, "Username already exist.", "Registration Failed", JOptionPane.ERROR_MESSAGE);                                
         }
         return true;
     }
