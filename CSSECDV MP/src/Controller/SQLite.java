@@ -215,7 +215,7 @@ public class SQLite {
         String sql = "SELECT username FROM users WHERE username = ?";
         
         try (Connection conn = DriverManager.getConnection(driverURL);
-                PreparedStatement pstmt = conn.prepareStatement(sql);){
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
             
             pstmt.setString(1, username);
             
@@ -224,8 +224,6 @@ public class SQLite {
             if(rs.next()){
 //                System.out.println("User: " + rs.getString("username") + " exist.");
                 return true;
-            } else {
-//                System.out.println("User DNE");
             }
 
         } catch (Exception ex) {
