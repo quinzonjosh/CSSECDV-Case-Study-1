@@ -1,6 +1,7 @@
 
 package View;
 
+import Controller.PasswordHasher;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,6 +21,7 @@ public class Register extends javax.swing.JPanel {
     
     
     public Frame frame;
+    private PasswordHasher passwordHasher;
     
     public Register() {
         initComponents();
@@ -121,12 +123,12 @@ public class Register extends javax.swing.JPanel {
                 isValidUsername(username) && 
                 isValidPassword(password, confirmPassword)){   
             
-            String hashedPassword = hashPasswordSHA(password, "SHA-1");
+            String hashedPassword = passwordHasher.hash(password, "SHA-1");
 
             if(isPasswordPwned(hashedPassword)){
                 JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
             } else {
-                String finalHashedPassword = hashPasswordSHA(hashedPassword, "SHA-256");
+                String finalHashedPassword = passwordHasher.hash(hashedPassword, "SHA-256");
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
                 String date = sdf.format(new Date());
                 JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
@@ -168,26 +170,6 @@ public class Register extends javax.swing.JPanel {
         }
         
         return false;
-    }
-    
-    private String hashPasswordSHA(String password, String algo){
-        try {
-            MessageDigest md = MessageDigest.getInstance(algo);
-        
-            md.update(password.getBytes());
-            
-            byte[] byteData = md.digest();
-            
-            StringBuilder sb = new StringBuilder();
-            for(byte b : byteData){
-                sb.append(String.format("%02x", b));
-            }
-            
-            return sb.toString();
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
     }
     
     private boolean hasEmptyFields(String username, String password, String confirmPassword){
