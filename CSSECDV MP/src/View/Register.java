@@ -125,7 +125,7 @@ public class Register extends javax.swing.JPanel {
             
             String hashedPassword = passwordHasher.hash(password, "SHA-1");
 
-            if(isPasswordPwned(hashedPassword)){
+            if(frame.isPasswordPwned(hashedPassword)){
                 JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
             } else {
                 String finalHashedPassword = passwordHasher.hash(hashedPassword, "SHA-256");
@@ -139,38 +139,6 @@ public class Register extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_registerBtnActionPerformed
-
-    private boolean isPasswordPwned(String hashedPassword){
-                
-        String prefix = hashedPassword.substring(0,5);
-        String suffix = hashedPassword.substring(5).toUpperCase();
-        
-        try {
-            URL url = new URL("https://api.pwnedpasswords.com/range/" + prefix);
-        
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            
-            BufferedReader input = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String inputLine;
-            
-            while((inputLine  = input.readLine()) != null){
-                if(inputLine.startsWith(suffix)){
-                    input.close();                    
-                    return true;
-                }
-            }
-            
-            input.close();
-            
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        return false;
-    }
     
     private boolean hasEmptyFields(String username, String password, String confirmPassword){
         if(username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
@@ -196,7 +164,6 @@ public class Register extends javax.swing.JPanel {
             }
         }
         
-        // frame.usernameExist(username) having performance issue
         if(frame.usernameExist(username)){
             JOptionPane.showMessageDialog(this, "Username already exist.", "Registration Failed", JOptionPane.ERROR_MESSAGE);                                
         }

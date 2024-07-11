@@ -4,6 +4,14 @@ import Controller.Main;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.WindowConstants;
 
 public class Frame extends javax.swing.JFrame {
@@ -259,6 +267,39 @@ public class Frame extends javax.swing.JFrame {
     public void registerAction(String username, String password, String confpass){
         main.sqlite.addUser(username, password, 2);
     }
+    
+        public boolean isPasswordPwned(String hashedPassword){
+                
+        String prefix = hashedPassword.substring(0,5);
+        String suffix = hashedPassword.substring(5).toUpperCase();
+        
+        try {
+            URL url = new URL("https://api.pwnedpasswords.com/range/" + prefix);
+        
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            
+            BufferedReader input = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String inputLine;
+            
+            while((inputLine  = input.readLine()) != null){
+                if(inputLine.startsWith(suffix)){
+                    input.close();                    
+                    return true;
+                }
+            }
+            
+            input.close();
+            
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return false;
+    }
+
     
     public boolean usernameExist(String username){
         return main.sqlite.usernameExist(username);
