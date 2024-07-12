@@ -268,7 +268,7 @@ public class Frame extends javax.swing.JFrame {
         main.sqlite.addUser(username, password, 2);
     }
     
-        public boolean isPasswordPwned(String hashedPassword){
+    public boolean isPasswordPwned(String hashedPassword){
                 
         String prefix = hashedPassword.substring(0,5);
         String suffix = hashedPassword.substring(5).toUpperCase();
@@ -299,10 +299,13 @@ public class Frame extends javax.swing.JFrame {
         
         return false;
     }
-
     
     public boolean usernameExist(String username){
         return main.sqlite.usernameExist(username);
+    }
+    
+    public boolean usernamePasswordMatching(String username, String password){
+        return main.sqlite.isUserCredentialsValid(username, password);
     }
     
     public void logAction(String event, String username, String desc, String timestamp){

@@ -295,6 +295,28 @@ public class SQLite {
         return products;
     }
     
+    public boolean isUserCredentialsValid(String username, String password){
+        String sql = "SELECT username, password FROM users WHERE username = ? AND password = ?";
+        
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+            
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+                return true;
+            }
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        
+        return false;
+    }
+    
     public ArrayList<User> getUsers(){
         String sql = "SELECT id, username, password, role, locked FROM users";
         ArrayList<User> users = new ArrayList<User>();
