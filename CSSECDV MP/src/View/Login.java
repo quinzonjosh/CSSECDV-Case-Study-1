@@ -1,12 +1,13 @@
 
 package View;
 
-import java.util.Arrays;
+import Controller.PasswordHasher;
 import javax.swing.JOptionPane;
 
 public class Login extends javax.swing.JPanel {
 
     public Frame frame;
+    private PasswordHasher passwordHasher = new PasswordHasher();
     
     public Login() {
         initComponents();
@@ -87,7 +88,7 @@ public class Login extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     private void loginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginBtnActionPerformed
         String username = usernameFld.getText();
-        String password = new String(passwordFld.getPassword());
+        String password = passwordHasher.hash(passwordHasher.hash(new String(passwordFld.getPassword()), "SHA-1"), "SHA-256");
         
         if(isValidLogin(username, password)){
             frame.mainNav();
@@ -96,8 +97,6 @@ public class Login extends javax.swing.JPanel {
     
     
     private boolean isValidLogin(String username, String password){
-        
-        
         if(username.isEmpty() || password.isEmpty()){
             JOptionPane.showMessageDialog(this, "Please complete the login form.", "Login Failed", JOptionPane.ERROR_MESSAGE);
             return false;
