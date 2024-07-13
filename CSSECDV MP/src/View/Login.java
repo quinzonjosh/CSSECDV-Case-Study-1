@@ -1,12 +1,14 @@
 
 package View;
 
+import Controller.PasswordHasher;
 import CustomExceptions.LoginException;
 import javax.swing.JOptionPane;
 
 public class Login extends javax.swing.JPanel {
 
     public Frame frame;
+    private PasswordHasher passwordHasher;
     
     public Login() {
         initComponents();
@@ -117,7 +119,8 @@ public class Login extends javax.swing.JPanel {
     }
     
     private void checkPassword(String username, String password) throws LoginException {
-        if(!frame.attemptLoginSuccessful(username, password))
+        String hashedPassword = passwordHasher.hash(passwordHasher.hash(password, "SHA-1"), "SHA-256");
+        if(!frame.attemptLoginSuccessful(username, hashedPassword))
             throw new LoginException();
     }
     

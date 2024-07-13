@@ -223,6 +223,9 @@ public class Frame extends javax.swing.JFrame {
     private CardLayout contentView = new CardLayout();
     private CardLayout frameView = new CardLayout();
     
+    private static final int MAX_LOGIN = 5;
+    private static int MAX_TIMEOUT = 15;
+    
     public void init(Main controller){
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setTitle("CSSECDV - SECURITY Svcs");
@@ -307,6 +310,20 @@ public class Frame extends javax.swing.JFrame {
     
     public boolean attemptLoginSuccessful(String username, String password){
         
+        //check if username and password is correct
+        if(!main.sqlite.isLoginSuccessful(username, password)){
+            
+            //if not, increase locked 
+            if(main.sqlite.increaseUserLock(username) >= MAX_LOGIN){
+                //if locked > MAX_LOGIN, lock user
+                main.sqlite.lockUser(username, MAX_TIMEOUT);
+            }
+            
+            return false;
+        }
+        
+        return true;
+       
     }
     
     public void logAction(String event, String username, String desc, String timestamp){

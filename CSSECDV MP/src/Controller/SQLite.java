@@ -10,6 +10,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
 public class SQLite {
@@ -232,6 +237,92 @@ public class SQLite {
         
         return false;
     }
+    
+    public boolean isLoginSuccessful(String username, String password){
+        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND password = ?)";
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+            
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+//                System.out.println("User: " + rs.getString("username") + " exist.");
+                return rs.getBoolean(1);
+            }
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        
+        return false;
+    }
+    
+    public int increaseUserLock(String username){
+        try (Connection conn = DriverManager.getConnection(driverURL)){
+            
+            String sql = "SELECT locked FROM users WHERE username = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, username);
+         
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+//                System.out.println("User: " + rs.getString("username") + " exist.");
+                int value = rs.getInt(1) + 1;
+                sql = "UPDATE users SET locked = ? WHERE username = ?";
+                
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setInt(1, value);
+                pstmt.setString(2, username);
+                
+                pstmt.executeUpdate();
+                
+                return value;
+            }
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        
+        return -1;
+    }
+    
+    public void lockUser(String username, int time){
+        
+        // to lock user, store lockout time + 15 minutes
+        try (Connection conn = DriverManager.getConnection(driverURL)){
+            
+            // Get the current time
+            LocalDateTime now = LocalDateTime.now();
+
+            // Add 15 minutes to the current time
+            LocalDateTime timeIn15Minutes = now.plus(time, ChronoUnit.MINUTES);
+
+            // Get the system default timezone
+            ZoneId zoneId = ZoneId.systemDefault();
+
+            // Convert the time to the timezone
+            ZonedDateTime zonedDateTime = timeIn15Minutes.atZone(zoneId);
+
+            // Convert ZonedDateTime to java.sql.Timestamp
+            String timestamp = Timestamp.valueOf(zonedDateTime.toLocalDateTime()).toString();
+            
+            String sql = "UPDATE users SET lockout_time = ? WHERE username = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, timestamp);
+            pstmt.setString(2, username);
+            
+            pstmt.executeUpdate();
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+    }
+    
     
     public ArrayList<History> getHistory(){
         String sql = "SELECT id, username, name, stock, timestamp FROM history";
