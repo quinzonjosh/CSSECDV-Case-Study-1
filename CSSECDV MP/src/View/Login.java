@@ -90,9 +90,13 @@ public class Login extends javax.swing.JPanel {
         String username = usernameFld.getText();
         String password = passwordHasher.hash(passwordHasher.hash(new String(passwordFld.getPassword()), "SHA-1"), "SHA-256");
         
-        if(isValidLogin(username, password)){
-            frame.mainNav();
-        }
+        if(username.isEmpty() || password.isEmpty()){
+            JOptionPane.showMessageDialog(this, "Please complete the login form.", "Login Failed", JOptionPane.ERROR_MESSAGE);           
+        } 
+        
+//        if(isValidLogin(username, password)){
+//            frame.mainNav();
+//        }
     }//GEN-LAST:event_loginBtnActionPerformed
     
     
