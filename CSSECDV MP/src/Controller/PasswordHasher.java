@@ -17,6 +17,9 @@ import java.util.logging.Logger;
  * @author quinz
  */
 public class PasswordHasher {
+
+    public PasswordHasher() {
+    }
     
     public String hash(String password, String algo){
         try {

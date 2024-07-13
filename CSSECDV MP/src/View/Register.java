@@ -2,26 +2,16 @@
 package View;
 
 import Controller.PasswordHasher;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class Register extends javax.swing.JPanel {
     
     
     public Frame frame;
-    private PasswordHasher passwordHasher;
+    private final PasswordHasher passwordHasher = new PasswordHasher();
     
     public Register() {
         initComponents();
@@ -135,7 +125,7 @@ public class Register extends javax.swing.JPanel {
 
                 frame.registerAction(usernameFld.getText(), finalHashedPassword, Arrays.toString(confpassFld.getPassword()));
                 frame.logAction("NOTICE", username, "User creation Successful", date);
-//                    frame.loginNav();
+                frame.loginNav();
             }
         }
     }//GEN-LAST:event_registerBtnActionPerformed
