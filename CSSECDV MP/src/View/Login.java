@@ -9,7 +9,7 @@ import javax.swing.JOptionPane;
 public class Login extends javax.swing.JPanel {
 
     public Frame frame;
-    private PasswordHasher passwordHasher = new PasswordHasher();
+    private final PasswordHasher passwordHasher = new PasswordHasher();
     
     public Login() {
         initComponents();

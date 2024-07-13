@@ -217,7 +217,7 @@ public class SQLite {
     }
     
     public boolean usernameExist(String username){
-        String sql = "SELECT username FROM users WHERE username = ?";
+        String sql = "SELECT username FROM users WHERE LOWER(username) = LOWER(?)";
         
         try (Connection conn = DriverManager.getConnection(driverURL);
                 PreparedStatement pstmt = conn.prepareStatement(sql)){

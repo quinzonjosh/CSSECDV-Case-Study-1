@@ -21,7 +21,7 @@ public class Register extends javax.swing.JPanel {
     
     
     public Frame frame;
-    private PasswordHasher passwordHasher;
+    private final PasswordHasher passwordHasher = new PasswordHasher();
     
     public Register() {
         initComponents();
@@ -166,6 +166,7 @@ public class Register extends javax.swing.JPanel {
         
         if(frame.usernameExist(username)){
             JOptionPane.showMessageDialog(this, "Username already exist.", "Registration Failed", JOptionPane.ERROR_MESSAGE);                                
+            return false;
         }
         return true;
     }
