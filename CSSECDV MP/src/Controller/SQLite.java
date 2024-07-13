@@ -290,12 +290,13 @@ public class SQLite {
         return -1;
     }
     
-    public boolean isUserUnlocked(String username){
-        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = 0)";
+    public boolean isUserUnlocked(String username, int time){
+        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked < ?)";
         try (Connection conn = DriverManager.getConnection(driverURL);
                 PreparedStatement pstmt = conn.prepareStatement(sql)){
             
             pstmt.setString(1, username);
+            pstmt.setInt(2, time);
             ResultSet rs = pstmt.executeQuery();
             
             if(rs.next()){

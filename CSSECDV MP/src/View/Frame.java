@@ -340,7 +340,7 @@ public class Frame extends javax.swing.JFrame {
     }
     
     public boolean attemptUnlockSuccessful(String username){
-        if(!main.sqlite.isUserUnlocked(username)){
+        if(!main.sqlite.isUserUnlocked(username, MAX_LOGIN)){
             
             this.logAction("USER_LOCK", username, String.format("[FAIL] User = %s currently locked from logging in.", username));
             
