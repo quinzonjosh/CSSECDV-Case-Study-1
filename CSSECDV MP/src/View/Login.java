@@ -119,8 +119,6 @@ public class Login extends javax.swing.JPanel {
             
         }
         
-        
-//        
     }//GEN-LAST:event_loginBtnActionPerformed
 
     private void checkUsername(String username) throws LoginException {
