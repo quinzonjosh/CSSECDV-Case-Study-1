@@ -110,7 +110,8 @@ public class Login extends javax.swing.JPanel {
                 //check if password is correct
                 checkPassword(username, password);
                 
-                JOptionPane.showMessageDialog(this, "User successfully logged in", "Login Successful", JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.showMessageDialog(this, "User successfully logged in", "Login Successful", JOptionPane.INFORMATION_MESSAGE);
+                frame.mainNav();
                 
             }catch(LoginException e){
                 JOptionPane.showMessageDialog(this, e.getMessage(), "Login Failed", JOptionPane.ERROR_MESSAGE);
@@ -119,7 +120,7 @@ public class Login extends javax.swing.JPanel {
         }
         
         
-//        frame.mainNav();
+//        
     }//GEN-LAST:event_loginBtnActionPerformed
 
     private void checkUsername(String username) throws LoginException {

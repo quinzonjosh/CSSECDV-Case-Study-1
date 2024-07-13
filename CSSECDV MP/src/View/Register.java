@@ -119,12 +119,10 @@ public class Register extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
             } else {
                 String finalHashedPassword = passwordHasher.hash(hashedPassword, "SHA-256");
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-                String date = sdf.format(new Date());
                 JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
 
                 frame.registerAction(usernameFld.getText(), finalHashedPassword, Arrays.toString(confpassFld.getPassword()));
-                frame.logAction("NOTICE", username, "User creation Successful", date);
+                frame.logAction("NOTICE", username, "User creation Successful");
 //                    frame.loginNav();
             }
         }
