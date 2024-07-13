@@ -10,8 +10,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
 public class Frame extends javax.swing.JFrame {
@@ -304,8 +306,30 @@ public class Frame extends javax.swing.JFrame {
         return main.sqlite.usernameExist(username);
     }
     
-    public boolean usernamePasswordMatching(String username, String password){
-        return main.sqlite.isUserCredentialsValid(username, password);
+    public boolean isCredentialsValid(String username, String password){
+        return main.sqlite.isCredentialsValid(username, password);
+    }
+    
+    public List<String> handleAdvancedLoginValidation(String username){
+        
+        // int numFailedAttempts = SQLite.getUserFailedAttempts(username)
+        // int userLockedStatus = SQLite.getLockedStatus(username)
+        // int userLockoutEnd = SQLite.getUserLockoutEnd(username)
+
+
+        // if (userLockoutEnd > time.now || userLockedStatus == 1) -> promp cannot login right now, try again later 
+        // else (unlocked) 
+            // if (!isCredentialsValid(username, password)) -> frame.loginFailed(username); -> in frame -> SQLIte, increment user's failed attempts
+                // if (numFailedAttempts < 4)-> prompt login failed 
+                // else if (numFailedAttempts == 4) -> prompt warning 
+                // else SQLite.lockAccount(username) -> timestamping 
+            // else (valid credentials)
+                // SQLite.unlockUser(username) -> also includes resetting failed attempts
+
+        // use this to prompt error msgs here
+        JOptionPane.showMessageDialog(this, "Login failed. Please check your username and password and try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+
+        return null;
     }
     
     public void logAction(String event, String username, String desc, String timestamp){

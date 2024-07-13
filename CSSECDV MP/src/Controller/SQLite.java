@@ -284,8 +284,8 @@ public class SQLite {
         return products;
     }
     
-    public boolean isUserCredentialsValid(String username, String password){
-        String sql = "SELECT username, password FROM users WHERE username = ? AND password = ?";
+    public boolean isCredentialsValid(String username, String password){
+        String sql = "SELECT username, password FROM users WHERE LOWER(username) = LOWER(?) AND password = ?";
         
         try (Connection conn = DriverManager.getConnection(driverURL);
                 PreparedStatement pstmt = conn.prepareStatement(sql)){

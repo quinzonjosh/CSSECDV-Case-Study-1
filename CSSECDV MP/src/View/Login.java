@@ -2,6 +2,7 @@
 package View;
 
 import Controller.PasswordHasher;
+import java.util.List;
 import javax.swing.JOptionPane;
 
 public class Login extends javax.swing.JPanel {
@@ -92,34 +93,13 @@ public class Login extends javax.swing.JPanel {
         
         if(username.isEmpty() || password.isEmpty()){
             JOptionPane.showMessageDialog(this, "Please complete the login form.", "Login Failed", JOptionPane.ERROR_MESSAGE);           
-        } 
-        
-//        if(isValidLogin(username, password)){
-//            frame.mainNav();
-//        }
-    }//GEN-LAST:event_loginBtnActionPerformed
-    
-    
-    private boolean isValidLogin(String username, String password){
-        if(username.isEmpty() || password.isEmpty()){
-            JOptionPane.showMessageDialog(this, "Please complete the login form.", "Login Failed", JOptionPane.ERROR_MESSAGE);
-            return false;
-        } else if(frame.usernameExist(username)){
-
-            //implement checking of login limit of the username here 
-            
-            if(frame.usernamePasswordMatching(username, password)){
-                return true;
-            } else {
-                // increment username login attempts here
-                JOptionPane.showMessageDialog(this, "Login failed. Please check your username and password and try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
-                return false;
-            }
-        } else {
+        } else if(!frame.usernameExist(username)) {
             JOptionPane.showMessageDialog(this, "Login failed. Please check your username and password and try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }        
-    }
+        } else {
+            frame.handleAdvancedLoginValidation(username);
+        }
+    }//GEN-LAST:event_loginBtnActionPerformed
+
     
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
         frame.registerNav();
