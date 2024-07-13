@@ -1,9 +1,15 @@
 
 package View;
 
+import Controller.PasswordHasher;
+import CustomExceptions.*;
+import java.util.Arrays;
+import javax.swing.JOptionPane;
+
 public class Login extends javax.swing.JPanel {
 
     public Frame frame;
+    private final PasswordHasher passwordHasher = new PasswordHasher();
     
     public Login() {
         initComponents();
@@ -15,7 +21,7 @@ public class Login extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         usernameFld = new javax.swing.JTextField();
-        passwordFld = new javax.swing.JTextField();
+        passwordFld = new javax.swing.JPasswordField();
         registerBtn = new javax.swing.JButton();
         loginBtn = new javax.swing.JButton();
 
@@ -33,6 +39,11 @@ public class Login extends javax.swing.JPanel {
         passwordFld.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         passwordFld.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         passwordFld.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true), "PASSWORD", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 12))); // NOI18N
+        passwordFld.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                passwordFldActionPerformed(evt);
+            }
+        });
 
         registerBtn.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         registerBtn.setText("REGISTER");
@@ -83,19 +94,78 @@ public class Login extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     private void loginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginBtnActionPerformed
-        frame.mainNav();
+        String username = usernameFld.getText();
+        String password = Arrays.toString(passwordFld.getPassword());
+        
+        
+        if(!hasEmptyFields(username, password)){
+            try{
+                
+                //check user name
+                checkUsername(username);
+                
+                //check if user is locked
+                verifyIfUserLocked(username);
+                
+                //check if password is correct
+                checkPassword(username, password);
+                
+                JOptionPane.showMessageDialog(this, "User successfully logged in", "Login Successful", JOptionPane.INFORMATION_MESSAGE);
+                frame.mainNav();
+                
+            } catch(LoginException e){
+                JOptionPane.showMessageDialog(this, e.getMessage(), "Login Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        
+        usernameFld.setText("");
+        passwordFld.setText("");
     }//GEN-LAST:event_loginBtnActionPerformed
 
+    private void checkUsername(String username) throws LoginException {
+        if(!frame.usernameExist(username))
+            throw new LoginException();
+    }
+    
+    private void checkPassword(String username, String password) throws LoginException {
+        String hashedPassword = passwordHasher.hash(passwordHasher.hash(password, "SHA-1"), "SHA-256");
+        if(!frame.attemptLoginSuccessful(username, hashedPassword))
+            throw new LoginException();
+    }
+    
+     private void verifyIfUserLocked(String username) throws AttemptException {
+         
+         if(!frame.attemptUnlockSuccessful(username))
+             throw new AttemptException();
+         
+     }
+
+    
+    
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
         frame.registerNav();
     }//GEN-LAST:event_registerBtnActionPerformed
 
+    private void passwordFldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passwordFldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_passwordFldActionPerformed
 
+
+    private boolean hasEmptyFields(String username, String password){
+        if(username.isEmpty() || password.isEmpty()){
+            JOptionPane.showMessageDialog(this, "Please complete the login form.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            return true;
+        } 
+        return false;
+    }
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton loginBtn;
-    private javax.swing.JTextField passwordFld;
+    private javax.swing.JPasswordField passwordFld;
     private javax.swing.JButton registerBtn;
     private javax.swing.JTextField usernameFld;
     // End of variables declaration//GEN-END:variables
 }
+   

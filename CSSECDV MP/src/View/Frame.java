@@ -1,9 +1,18 @@
 package View;
 
 import Controller.Main;
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Dimension;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.WindowConstants;
 
 public class Frame extends javax.swing.JFrame {
@@ -200,6 +209,7 @@ public class Frame extends javax.swing.JFrame {
     }//GEN-LAST:event_clientBtnActionPerformed
 
     private void logoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutBtnActionPerformed
+        this.logAction("LOG_OUT", "current", "Current user logging out.");
         frameView.show(Container, "loginPnl");
     }//GEN-LAST:event_logoutBtnActionPerformed
 
@@ -214,6 +224,9 @@ public class Frame extends javax.swing.JFrame {
     
     private CardLayout contentView = new CardLayout();
     private CardLayout frameView = new CardLayout();
+    
+    private static final int MAX_LOGIN = 5;
+    private static final int MAX_TIMEOUT = 15;
     
     public void init(Main controller){
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -257,9 +270,102 @@ public class Frame extends javax.swing.JFrame {
     }
     
     public void registerAction(String username, String password, String confpass){
-        main.sqlite.addUser(username, password);
+        main.sqlite.addUser(username, password, 2);
+    }
+    
+        public boolean isPasswordPwned(String hashedPassword){
+                
+        String prefix = hashedPassword.substring(0,5);
+        String suffix = hashedPassword.substring(5).toUpperCase();
+        
+        try {
+            URL url = new URL("https://api.pwnedpasswords.com/range/" + prefix);
+        
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            
+            BufferedReader input = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String inputLine;
+            
+            while((inputLine  = input.readLine()) != null){
+                if(inputLine.startsWith(suffix)){
+                    input.close();                    
+                    return true;
+                }
+            }
+            
+            input.close();
+            
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return false;
     }
 
+    
+    public boolean usernameExist(String username){
+        if (main.sqlite.usernameExist(username)){
+            this.logAction("ATTEMPT_USERNAME", username, String.format("[SUCCESS] Input username = %s verified.", username));
+            return true;
+        }
+        
+        this.logAction("ATTEMPT_USERNAME", username, String.format("[FAIL] Input username = %s does not exist.", username));
+        return false;
+    }
+    
+    public boolean attemptLoginSuccessful(String username, String password){
+        
+        //check if username and password is correct
+        if(!main.sqlite.isLoginSuccessful(username, password)){
+            
+            this.logAction("ATTEMPT_LOGIN", username, String.format("[FAIL] Username and password not matched."));
+            //if not, increase locked 
+            int value = main.sqlite.increaseUserLock(username);
+            this.logAction("ATTEMPT_INCREASE", username, String.format("Number of Attempts for User %s = %d", username, value));
+            
+            if(value >= MAX_LOGIN){
+                //if locked > MAX_LOGIN, lock user
+                main.sqlite.lockUser(username, MAX_TIMEOUT);
+                this.logAction("USER_LOCK", username, String.format("[FAIL] User %s locked due to max login attempts.", username));
+            }
+            
+            return false;
+        }
+        
+        this.logAction("ATTEMPT_LOGIN", username, String.format("[SUCCESS] Attempted Username and password matched."));
+        return true;
+       
+    }
+    
+    public boolean attemptUnlockSuccessful(String username){
+        if(!main.sqlite.isUserUnlocked(username, MAX_LOGIN)){
+            
+            this.logAction("USER_LOCK", username, String.format("[FAIL] User = %s currently locked from logging in.", username));
+            
+            if(main.sqlite.tryUnlock(username)){
+                this.logAction("ATTEMPT_UNLOCK", username, String.format("[SUCCESS] User = %s unlocked due to expired timeout.", username));
+                return true;
+            }
+            this.logAction("ATTEMPT_UNLOCK", username, String.format("[FAIL] Current timeout is not yet expired."));
+            return false;
+        }
+        
+        this.logAction("USER_LOCK", username, String.format("[SUCCESS] User = %s is not locked from logging in.", username));
+        return true;
+    }
+    
+    public void logAction(String event, String username, String desc){
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        sdf.setTimeZone(TimeZone.getDefault()); 
+        String date = sdf.format(new Date());
+        
+        main.sqlite.addLogs(event, username, desc, date);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel Container;
     private javax.swing.JPanel Content;

@@ -1,9 +1,15 @@
 
 package View;
 
-public class Register extends javax.swing.JPanel {
+import Controller.PasswordHasher;
+import java.util.Arrays;
+import javax.swing.JOptionPane;
 
+public class Register extends javax.swing.JPanel {
+    
+    
     public Frame frame;
+    private final PasswordHasher passwordHasher = new PasswordHasher();
     
     public Register() {
         initComponents();
@@ -14,10 +20,10 @@ public class Register extends javax.swing.JPanel {
     private void initComponents() {
 
         registerBtn = new javax.swing.JButton();
-        passwordFld = new javax.swing.JTextField();
+        passwordFld = new javax.swing.JPasswordField();
         usernameFld = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        confpassFld = new javax.swing.JTextField();
+        confpassFld = new javax.swing.JPasswordField();
         backBtn = new javax.swing.JButton();
 
         registerBtn.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
@@ -97,10 +103,83 @@ public class Register extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
-        frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
-        frame.loginNav();
-    }//GEN-LAST:event_registerBtnActionPerformed
+        String username = usernameFld.getText();
+        String password = Arrays.toString(passwordFld.getPassword());
+        String confirmPassword = Arrays.toString(confpassFld.getPassword());
+        
+        if(!hasEmptyFields(username, password, confirmPassword) && 
+                isValidUsername(username) && 
+                isValidPassword(password, confirmPassword)){   
+            
+            String hashedPassword = passwordHasher.hash(password, "SHA-1");
 
+            if(frame.isPasswordPwned(hashedPassword)){
+                JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            } else {
+                String finalHashedPassword = passwordHasher.hash(hashedPassword, "SHA-256");
+                JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
+
+                frame.registerAction(usernameFld.getText(), finalHashedPassword, Arrays.toString(confpassFld.getPassword()));
+                frame.logAction("NOTICE", username, "User creation Successful");
+                frame.loginNav();
+            }
+        }
+    }//GEN-LAST:event_registerBtnActionPerformed
+    
+    private boolean hasEmptyFields(String username, String password, String confirmPassword){
+        if(username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
+            JOptionPane.showMessageDialog(this, "Please complete the registration form.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            return true;
+        } 
+        return false;
+    }
+    
+    private boolean isValidUsername(String username){
+        if(username.length() < 5 || username.length() > 20) {
+            JOptionPane.showMessageDialog(this, "Username must be 5 - 20 characters long.", "Registration Failed", JOptionPane.ERROR_MESSAGE);            
+            return false;
+        } 
+        if(username.contains(" ")){
+            JOptionPane.showMessageDialog(this, "Username must not contain spaces.", "Registration Failed", JOptionPane.ERROR_MESSAGE);            
+            return false;
+        }
+        for(char c : username.toCharArray()){
+            if(!Character.isLetterOrDigit(c) && c != '_' && c != '-' && c != '.'){
+                JOptionPane.showMessageDialog(this, "Username may only contain special characters dots, dashes, and underscores", "Registration Failed", JOptionPane.ERROR_MESSAGE);                                
+                return false;
+            }
+        }
+        
+        if(frame.usernameExist(username)){
+            JOptionPane.showMessageDialog(this, "Username already exist.", "Registration Failed", JOptionPane.ERROR_MESSAGE);                                
+            return false;
+        }
+        return true;
+    }
+    
+    private boolean isValidPassword(String password, String confirmPassword){
+        
+        boolean hasUppercase = !password.equals(password.toLowerCase());
+        boolean hasLowercase = !password.equals(password.toUpperCase());
+        boolean hasDigit = password.matches(".*\\d.*");
+        boolean hasSpecialChar = password.matches(".*[!@#$%^&*()-+=<>?/{}~|_.].*");
+        
+        if(password.length() < 8 || password.length() > 64){
+            JOptionPane.showMessageDialog(this, "Password must be 8 - 64 characters long.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        if(!hasUppercase || !hasLowercase || !hasDigit || !hasSpecialChar){
+            JOptionPane.showMessageDialog(this, "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        if(!password.equals(confirmPassword)){
+            JOptionPane.showMessageDialog(this, "Password and Confirm Password do not match.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+    
     private void backBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backBtnActionPerformed
         frame.loginNav();
     }//GEN-LAST:event_backBtnActionPerformed
@@ -108,9 +187,9 @@ public class Register extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton backBtn;
-    private javax.swing.JTextField confpassFld;
+    private javax.swing.JPasswordField confpassFld;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField passwordFld;
+    private javax.swing.JPasswordField passwordFld;
     private javax.swing.JButton registerBtn;
     private javax.swing.JTextField usernameFld;
     // End of variables declaration//GEN-END:variables
