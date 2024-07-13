@@ -252,11 +252,12 @@ public class SQLite {
                 if (rs.getBoolean(1)){
                     
                     //unlock user
-                    sql = "UPDATE users SET locked = ?, lockout_time = ? WHERE username = ?";
+                    sql = "UPDATE users SET failed_attempts = ?, locked = ?, lockout_time = ? WHERE username = ?";
                     PreparedStatement two = conn.prepareStatement(sql);
                     two.setInt(1, 0);
-                    two.setNull(2, java.sql.Types.VARCHAR);
-                    two.setString(3, username);
+                    two.setInt(2, 0);
+                    two.setNull(3, java.sql.Types.VARCHAR);
+                    two.setString(4, username);
                     
                     two.executeUpdate();
                     
@@ -276,7 +277,7 @@ public class SQLite {
     public int increaseUserLock(String username){
         try (Connection conn = DriverManager.getConnection(driverURL)){
             
-            String sql = "SELECT locked FROM users WHERE username = ?";
+            String sql = "SELECT failed_attempts, locked FROM users WHERE username = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, username);
          
@@ -285,16 +286,18 @@ public class SQLite {
             
             if(rs.next()){
 //                System.out.println("User: " + rs.getString("username") + " exist.");
-                int value = rs.getInt(1) + 1;
-                sql = "UPDATE users SET locked = ? WHERE username = ?";
+                int failed = rs.getInt(1) + 1;
+                int locked  = rs.getInt(2) + 1;
+                sql = "UPDATE users SET failed_attempts = ?, locked = ? WHERE username = ?";
                 
                 pstmt = conn.prepareStatement(sql);
-                pstmt.setInt(1, value);
-                pstmt.setString(2, username);
+                pstmt.setInt(1, failed);
+                pstmt.setInt(2, locked);
+                pstmt.setString(3, username);
                 
                 pstmt.executeUpdate();
                 
-                return value;
+                return locked;
             }
 
         } catch (Exception ex) {

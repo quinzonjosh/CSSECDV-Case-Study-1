@@ -209,6 +209,7 @@ public class Frame extends javax.swing.JFrame {
     }//GEN-LAST:event_clientBtnActionPerformed
 
     private void logoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutBtnActionPerformed
+        this.logAction("LOG_OUT", "current", "Current user logging out.");
         frameView.show(Container, "loginPnl");
     }//GEN-LAST:event_logoutBtnActionPerformed
 
@@ -225,7 +226,7 @@ public class Frame extends javax.swing.JFrame {
     private CardLayout frameView = new CardLayout();
     
     private static final int MAX_LOGIN = 5;
-    private static int MAX_TIMEOUT = 15;
+    private static int MAX_TIMEOUT = 1;
     
     public void init(Main controller){
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
