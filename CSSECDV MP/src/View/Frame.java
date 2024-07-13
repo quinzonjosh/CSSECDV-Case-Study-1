@@ -305,6 +305,10 @@ public class Frame extends javax.swing.JFrame {
         return main.sqlite.usernameExist(username);
     }
     
+    public boolean attemptLoginSuccessful(String username, String password){
+        
+    }
+    
     public void logAction(String event, String username, String desc, String timestamp){
         main.sqlite.addLogs(event, username, desc, timestamp);
     }

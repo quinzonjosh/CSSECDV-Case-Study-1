@@ -1,6 +1,9 @@
 
 package View;
 
+import CustomExceptions.LoginException;
+import javax.swing.JOptionPane;
+
 public class Login extends javax.swing.JPanel {
 
     public Frame frame;
@@ -83,14 +86,56 @@ public class Login extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     private void loginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginBtnActionPerformed
+        String username = usernameFld.getText();
+        String password = usernameFld.getText();
+        
+        
+        if(!hasEmptyFields(username, password)){
+            try{
+                
+                //check user name
+                checkUsername(username);
+                
+                //check if user is locked
+                
+                //check if password is correct
+                checkPassword(username, password);
+                
+            }catch(LoginException e){
+                
+            }
+            
+        }
+        
+        
         frame.mainNav();
     }//GEN-LAST:event_loginBtnActionPerformed
 
+    private void checkUsername(String username) throws LoginException {
+        if(!frame.usernameExist(username))
+            throw new LoginException();
+    }
+    
+    private void checkPassword(String username, String password) throws LoginException {
+        if(!frame.attemptLoginSuccessful(username, password))
+            throw new LoginException();
+    }
+    
+    
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
         frame.registerNav();
     }//GEN-LAST:event_registerBtnActionPerformed
 
 
+    private boolean hasEmptyFields(String username, String password){
+        if(username.isEmpty() || password.isEmpty()){
+            JOptionPane.showMessageDialog(this, "Please complete the login form.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            return true;
+        } 
+        return false;
+    }
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton loginBtn;
