@@ -264,8 +264,8 @@ public class Frame extends javax.swing.JFrame {
         frameView.show(Container, "registerPnl");
     }
     
-    public void registerAction(String username, String password, String confpass){
-        main.sqlite.addUser(username, password, 2);
+    public void registerAction(String username, String password){
+        main.sqlite.addUser(username, password);
     }
     
     public boolean isPasswordPwned(String hashedPassword){

@@ -123,7 +123,7 @@ public class Register extends javax.swing.JPanel {
                 String date = sdf.format(new Date());
                 JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
 
-                frame.registerAction(usernameFld.getText(), finalHashedPassword, Arrays.toString(confpassFld.getPassword()));
+                frame.registerAction(username, finalHashedPassword);
                 frame.logAction("NOTICE", username, "User creation Successful", date);
                 frame.loginNav();
             }
