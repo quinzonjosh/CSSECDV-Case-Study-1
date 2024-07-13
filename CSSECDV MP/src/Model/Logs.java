@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  *
@@ -44,6 +45,7 @@ public class Logs {
         this.username = username;
         this.desc = desc;
         try {
+            dateformat.setTimeZone(TimeZone.getDefault()); // Use the current time zone
             this.timestamp = new Timestamp(dateformat.parse(timestamp).getTime());
         } catch (ParseException ex) {
             ex.printStackTrace();

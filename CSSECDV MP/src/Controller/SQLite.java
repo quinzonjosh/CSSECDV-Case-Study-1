@@ -11,11 +11,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class SQLite {
     
@@ -311,7 +316,7 @@ public class SQLite {
         return false;
     }
     
-    public boolean tryUnlock(String username, int time){
+    public boolean tryUnlock(String username){
         try (Connection conn = DriverManager.getConnection(driverURL)){
             
             String sql = "SELECT lockout_time FROM users WHERE username = ?";
@@ -323,19 +328,21 @@ public class SQLite {
             
             if(rs.next()){
                 
-                // Retrieve the timestamp from the result set
-                Timestamp dbTimestamp = Timestamp.valueOf(rs.getString(1));
+                String retrievedDateString = rs.getString("your_datetime_column");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
+                
+                Date retrievedDate = sdf.parse(retrievedDateString);
+                Date now = new Date();
 
-                // Get the current time
-                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
-
-                // Convert the database timestamp to LocalDateTime
-                LocalDateTime dbTime = dbTimestamp.toLocalDateTime();
-                        
-                // Compare the timestamps
-                if (now.isAfter(dbTime)) {
+                //if date now is before timeout date, return false (failed attempt)
+                if (now.before(retrievedDate))
+                    return false;
+  
+                //else now is equal or after timout date, unlock user
+                else {
                     
-                    //unlock user
+//                  unlock user
                     sql = "UPDATE users SET locked = ?, lockout_time = ? WHERE username = ?";
                     pstmt = conn.prepareStatement(sql);
                     pstmt.setInt(1, 0);
@@ -345,9 +352,8 @@ public class SQLite {
                     pstmt.executeUpdate();
               
                     return true;
-                    
-                } else return false;
-        
+                }
+
             }
 
         } catch (Exception ex) {
@@ -362,24 +368,23 @@ public class SQLite {
         // to lock user, store lockout time + 15 minutes
         try (Connection conn = DriverManager.getConnection(driverURL)){
             
-            // Get the current time
-            LocalDateTime now = LocalDateTime.now();
+            
+            // Step 1: Get the current date and time
+            Calendar calendar = Calendar.getInstance();
 
-            // Add 15 minutes to the current time
-            LocalDateTime timeIn15Minutes = now.plus(time, ChronoUnit.MINUTES);
+            // Step 2: Add 15 minutes to the current time
+            calendar.add(Calendar.MINUTE, time);
+            Date futureDate = calendar.getTime();
 
-            // Get the system default timezone
-            ZoneId zoneId = ZoneId.systemDefault();
-
-            // Convert the time to the timezone
-            ZonedDateTime zonedDateTime = timeIn15Minutes.atZone(zoneId);
-
-            // Convert ZonedDateTime to java.sql.Timestamp
-            String timestamp = Timestamp.valueOf(zonedDateTime.toLocalDateTime()).toString();
+            // Step 3: Format the future date and time
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
+            String formattedDate = sdf.format(futureDate);
+            
             
             String sql = "UPDATE users SET lockout_time = ? WHERE username = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, timestamp);
+            pstmt.setString(1, formattedDate);
             pstmt.setString(2, username);
             
             pstmt.executeUpdate();
