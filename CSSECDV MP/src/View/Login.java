@@ -99,6 +99,9 @@ public class Login extends javax.swing.JPanel {
         
         
         if(!hasEmptyFields(username, password)){
+            usernameFld.setText("");
+            passwordFld.setText("");
+            
             try{
                 
                 //check user name
@@ -117,9 +120,6 @@ public class Login extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, e.getMessage(), "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
         }
-        
-        usernameFld.setText("");
-        passwordFld.setText("");
     }//GEN-LAST:event_loginBtnActionPerformed
 
     private void checkUsername(String username) throws LoginException {
