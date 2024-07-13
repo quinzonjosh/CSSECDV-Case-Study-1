@@ -291,6 +291,72 @@ public class SQLite {
         return -1;
     }
     
+    public boolean isUserUnlocked(String username){
+        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = 0)";
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+            
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+//                System.out.println("User: " + rs.getString("username") + " exist.");
+                return rs.getBoolean(1);
+            }
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        
+        return false;
+    }
+    
+    public boolean tryUnlock(String username, int time){
+        try (Connection conn = DriverManager.getConnection(driverURL)){
+            
+            String sql = "SELECT lockout_time FROM users WHERE username = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, username);
+         
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+                
+                // Retrieve the timestamp from the result set
+                Timestamp dbTimestamp = Timestamp.valueOf(rs.getString(1));
+
+                // Get the current time
+                LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+
+                // Convert the database timestamp to LocalDateTime
+                LocalDateTime dbTime = dbTimestamp.toLocalDateTime();
+                        
+                // Compare the timestamps
+                if (now.isAfter(dbTime)) {
+                    
+                    //unlock user
+                    sql = "UPDATE users SET locked = ?, lockout_time = ? WHERE username = ?";
+                    pstmt = conn.prepareStatement(sql);
+                    pstmt.setInt(1, 0);
+                    pstmt.setNull(2, java.sql.Types.VARCHAR);
+                    pstmt.setString(3, username);
+                    
+                    pstmt.executeUpdate();
+              
+                    return true;
+                    
+                } else return false;
+        
+            }
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        
+        return false;
+    }
+    
     public void lockUser(String username, int time){
         
         // to lock user, store lockout time + 15 minutes

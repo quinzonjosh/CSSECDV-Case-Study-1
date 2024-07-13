@@ -326,6 +326,13 @@ public class Frame extends javax.swing.JFrame {
        
     }
     
+    public boolean attemptUnlockSuccessful(String username){
+        if(!main.sqlite.isUserUnlocked(username)){
+            return main.sqlite.tryUnlock(username, MAX_TIMEOUT);
+        }
+        return true;
+    }
+    
     public void logAction(String event, String username, String desc, String timestamp){
         main.sqlite.addLogs(event, username, desc, timestamp);
     }

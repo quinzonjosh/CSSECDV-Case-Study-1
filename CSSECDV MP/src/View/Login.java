@@ -2,7 +2,7 @@
 package View;
 
 import Controller.PasswordHasher;
-import CustomExceptions.LoginException;
+import CustomExceptions.*;
 import javax.swing.JOptionPane;
 
 public class Login extends javax.swing.JPanel {
@@ -99,18 +99,19 @@ public class Login extends javax.swing.JPanel {
                 checkUsername(username);
                 
                 //check if user is locked
+                verifyIfUserLocked(username);
                 
                 //check if password is correct
                 checkPassword(username, password);
                 
             }catch(LoginException e){
-                
+                JOptionPane.showMessageDialog(this, e.getMessage(), "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
             
         }
         
         
-        frame.mainNav();
+//        frame.mainNav();
     }//GEN-LAST:event_loginBtnActionPerformed
 
     private void checkUsername(String username) throws LoginException {
@@ -123,6 +124,14 @@ public class Login extends javax.swing.JPanel {
         if(!frame.attemptLoginSuccessful(username, hashedPassword))
             throw new LoginException();
     }
+    
+     private void verifyIfUserLocked(String username) throws AttemptException {
+         
+         if(!frame.attemptUnlockSuccessful(username))
+             throw new AttemptException();
+         
+     }
+
     
     
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
@@ -147,3 +156,4 @@ public class Login extends javax.swing.JPanel {
     private javax.swing.JTextField usernameFld;
     // End of variables declaration//GEN-END:variables
 }
+   
