@@ -1,9 +1,7 @@
 package View;
 
 import Controller.Main;
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -361,7 +359,7 @@ public class Frame extends javax.swing.JFrame {
     public void logAction(String event, String username, String desc){
         
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
+        sdf.setTimeZone(TimeZone.getDefault()); 
         String date = sdf.format(new Date());
         
         main.sqlite.addLogs(event, username, desc, date);

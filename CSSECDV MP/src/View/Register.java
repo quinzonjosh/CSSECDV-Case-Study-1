@@ -2,9 +2,7 @@
 package View;
 
 import Controller.PasswordHasher;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import javax.swing.JOptionPane;
 
 public class Register extends javax.swing.JPanel {
@@ -123,7 +121,7 @@ public class Register extends javax.swing.JPanel {
 
                 frame.registerAction(usernameFld.getText(), finalHashedPassword, Arrays.toString(confpassFld.getPassword()));
                 frame.logAction("NOTICE", username, "User creation Successful");
-//                    frame.loginNav();
+                frame.loginNav();
             }
         }
     }//GEN-LAST:event_registerBtnActionPerformed
