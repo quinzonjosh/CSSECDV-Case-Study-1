@@ -226,7 +226,7 @@ public class Frame extends javax.swing.JFrame {
     private CardLayout frameView = new CardLayout();
     
     private static final int MAX_LOGIN = 5;
-    private static int MAX_TIMEOUT = 1;
+    private static final int MAX_TIMEOUT = 15;
     
     public void init(Main controller){
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
