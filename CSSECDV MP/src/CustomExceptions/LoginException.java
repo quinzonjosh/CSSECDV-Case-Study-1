@@ -8,6 +8,14 @@ package CustomExceptions;
  *
  * @author Cymon
  */
-public class LoginException {
+public class LoginException extends Exception {
+    
+    public LoginException(){
+        super("Invalid username or password, please try again.");
+    }
+    
+    protected LoginException(String message){
+        super(message);
+    }
     
 }

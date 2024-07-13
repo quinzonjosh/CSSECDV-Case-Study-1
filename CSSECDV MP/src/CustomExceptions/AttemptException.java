@@ -8,6 +8,10 @@ package CustomExceptions;
  *
  * @author Cymon
  */
-public class AttemptException {
+public class AttemptException extends LoginException {
+    
+    public AttemptException(){
+        super("Cannot login right now, please try again later.");
+    }
     
 }
