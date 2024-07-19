@@ -96,7 +96,9 @@ public class Login extends javax.swing.JPanel {
         } else if(!frame.usernameExist(username)) {
             JOptionPane.showMessageDialog(this, "Login failed. Please check your username and password and try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
         } else {
-            frame.handleAdvancedLoginValidation(username);
+            if(frame.advancedLoginValidationSuccessful(username, password)){
+                frame.mainNav();
+            }
         }
     }//GEN-LAST:event_loginBtnActionPerformed
 

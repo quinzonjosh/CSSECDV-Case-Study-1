@@ -270,6 +270,31 @@ public class Frame extends javax.swing.JFrame {
         main.sqlite.addUser(username, password);
     }
     
+    public boolean advancedLoginValidationSuccessful(String username, String Password){
+        
+        String dbPassword = main.sqlite.getPassword(username);
+        
+        System.out.println(dbPassword);
+        
+        // int numFailedAttempts = SQLite.getUserFailedAttempts(username)
+        // int userLockedStatus = SQLite.getLockedStatus(username)
+        // int userLockoutEnd = SQLite.getUserLockoutEnd(username)
+
+        // if (userLockoutEnd > time.now || userLockedStatus == 1) -> promp cannot login right now, try again later 
+        // else (unlocked) 
+            // if (!isCredentialsValid(username, password)) -> frame.loginFailed(username); -> in frame -> SQLIte, increment user's failed attempts
+                // if (numFailedAttempts < 4)-> prompt login failed 
+                // else if (numFailedAttempts == 4) -> prompt warning 
+                // else SQLite.lockAccount(username) -> timestamping 
+            // else (valid credentials)
+                // SQLite.unlockUser(username) -> also includes resetting failed attempts
+
+        // use this to prompt error msgs here
+//        JOptionPane.showMessageDialog(this, "Login failed. Please check your username and password and try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            
+        return false;
+    }
+    
     public boolean isPasswordPwned(String hashedPassword){
                 
         String prefix = hashedPassword.substring(0,5);
@@ -308,28 +333,6 @@ public class Frame extends javax.swing.JFrame {
     
     public boolean isCredentialsValid(String username, String password){
         return main.sqlite.isCredentialsValid(username, password);
-    }
-    
-    public List<String> handleAdvancedLoginValidation(String username){
-        
-        // int numFailedAttempts = SQLite.getUserFailedAttempts(username)
-        // int userLockedStatus = SQLite.getLockedStatus(username)
-        // int userLockoutEnd = SQLite.getUserLockoutEnd(username)
-
-
-        // if (userLockoutEnd > time.now || userLockedStatus == 1) -> promp cannot login right now, try again later 
-        // else (unlocked) 
-            // if (!isCredentialsValid(username, password)) -> frame.loginFailed(username); -> in frame -> SQLIte, increment user's failed attempts
-                // if (numFailedAttempts < 4)-> prompt login failed 
-                // else if (numFailedAttempts == 4) -> prompt warning 
-                // else SQLite.lockAccount(username) -> timestamping 
-            // else (valid credentials)
-                // SQLite.unlockUser(username) -> also includes resetting failed attempts
-
-        // use this to prompt error msgs here
-        JOptionPane.showMessageDialog(this, "Login failed. Please check your username and password and try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
-
-        return null;
     }
     
     public void logAction(String event, String username, String desc, String timestamp){

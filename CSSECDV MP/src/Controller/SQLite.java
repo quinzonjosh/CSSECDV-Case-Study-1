@@ -242,6 +242,28 @@ public class SQLite {
         return logs;
     }
     
+    public String getPassword(String username){
+        String sql = "SELECT password FROM users WHERE username = LOWER(?)";
+        
+        String password = "";
+        
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+        
+            pstmt.setString(1, username);
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+                password = rs.getString("password");
+            }            
+        } catch (Exception ex) {
+            System.out.print(ex);
+        } 
+        
+        return password;
+    }
+    
     public Product getProduct(String name){
         String sql = "SELECT name, stock, price FROM product WHERE name='" + name + "';";
         Product product = null;
