@@ -296,6 +296,27 @@ public class SQLite {
         return users;
     }
     
+    public boolean isAccountLocked(String username){
+        String sql = "SELECT locked FROM users WHERE username = LOWER(?)";
+        
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+            
+            pstmt.setString(1, username);
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+                return rs.getInt("locked") == 1;
+            }
+            
+        } catch (Exception ex) {
+            System.out.print(ex);
+        } 
+        
+        return false;
+    }
+    
     public boolean isCredentialsValid(String username, String password){
         String sql = "SELECT username, password FROM users WHERE LOWER(username) = LOWER(?) AND password = ?";
         
@@ -360,7 +381,6 @@ public class SQLite {
         } catch (Exception ex) {
             System.out.print(ex);
         }
-        
     }
     
     public boolean usernameExist(String username){
