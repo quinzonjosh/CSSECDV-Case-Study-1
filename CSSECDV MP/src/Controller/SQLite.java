@@ -330,6 +330,39 @@ public class SQLite {
         }
     }
     
+    public void updateFailedAttempts(String username, String status){
+        String sql = "SELECT failed_attempts FROM users WHERE username = LOWER(?)";
+        int currentAttempts = 0;
+               
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+            
+            pstmt.setString(1, username);
+            
+            ResultSet rs = pstmt.executeQuery();
+            if(rs.next()){
+                currentAttempts = rs.getInt(1);
+            }
+            
+            sql = "UPDATE users SET failed_attempts = ? WHERE username = LOWER(?)";
+            PreparedStatement pstmt2 = conn.prepareStatement(sql);
+            
+            if(status.equals("successful")){
+                pstmt2.setInt(1, 0);
+            } else {
+                pstmt2.setInt(1, ++currentAttempts);
+            }
+            
+            pstmt2.setString(1, username);
+            
+            pstmt2.executeUpdate();
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        
+    }
+    
     public boolean usernameExist(String username){
         String sql = "SELECT username FROM users WHERE LOWER(username) = LOWER(?)";
         
