@@ -199,6 +199,28 @@ public class SQLite {
             System.out.print(ex);
         }
     }
+    
+    public int getFailedAttempts(String username){
+        String sql = "SELECT failed_attempts FROM users WHERE username = LOWER(?)";
+        
+        int failedAttempts = 0;
+        
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+        
+            pstmt.setString(1, username);
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+                failedAttempts = rs.getInt("failed_attempts");
+            }            
+        } catch (Exception ex) {
+            System.out.print(ex);
+        } 
+        
+        return failedAttempts;
+    }
         
     public ArrayList<History> getHistory(){
         String sql = "SELECT id, username, name, stock, timestamp FROM history";
@@ -318,7 +340,7 @@ public class SQLite {
         return users;
     }
     
-    public boolean isAccountLocked(String username){
+    public boolean isUserLocked(String username){
         String sql = "SELECT locked FROM users WHERE username = LOWER(?)";
         
         try (Connection conn = DriverManager.getConnection(driverURL);
@@ -338,29 +360,37 @@ public class SQLite {
         
         return false;
     }
-    
-    public boolean isCredentialsValid(String username, String password){
-        String sql = "SELECT username, password FROM users WHERE LOWER(username) = LOWER(?) AND password = ?";
+        
+    private void lockUser(String username){
+        String sql = "UPDATE users SET locked = 1 WHERE username = LOWER(?)";
         
         try (Connection conn = DriverManager.getConnection(driverURL);
                 PreparedStatement pstmt = conn.prepareStatement(sql)){
             
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-            
-            ResultSet rs = pstmt.executeQuery();
-            
-            if(rs.next()){
-                return true;
-            }
-
+                pstmt.setString(1, username);
+                
+                pstmt.executeQuery();
+                    
         } catch (Exception ex) {
             System.out.print(ex);
-        }
-        
-        return false;
+        }       
     }
+    
+    public void unlockUser(String username){
+        String sql = "UPDATE users SET locked = 0 WHERE username = LOWER(?)";
         
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+            
+                pstmt.setString(1, username);
+                
+                pstmt.executeQuery();
+                    
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }       
+    }
+    
     public void removeUser(String username) {
         String sql = "DELETE FROM users WHERE username='" + username + "';";
 
@@ -373,9 +403,9 @@ public class SQLite {
         }
     }
     
-    public void updateFailedAttempts(String username, String status){
+    public void updateFailedAttempts(String username, String status, int MAX_FAILED_LOGIN){
         String sql = "SELECT failed_attempts FROM users WHERE username = LOWER(?)";
-        int currentAttempts = 0;
+        int currentFailedAttempts = 0;
                
         try (Connection conn = DriverManager.getConnection(driverURL);
                 PreparedStatement pstmt = conn.prepareStatement(sql)){
@@ -384,7 +414,7 @@ public class SQLite {
             
             ResultSet rs = pstmt.executeQuery();
             if(rs.next()){
-                currentAttempts = rs.getInt(1);
+                currentFailedAttempts = rs.getInt(1);
             }
             
             sql = "UPDATE users SET failed_attempts = ? WHERE username = LOWER(?)";
@@ -392,8 +422,12 @@ public class SQLite {
             
             if(status.equals("successful")){
                 pstmt2.setInt(1, 0);
+                unlockUser(username);
             } else {
-                pstmt2.setInt(1, ++currentAttempts);
+                pstmt2.setInt(1, ++currentFailedAttempts);
+                if(currentFailedAttempts == MAX_FAILED_LOGIN){
+                    lockUser(username);
+                }
             }
             
             pstmt2.setString(1, username);

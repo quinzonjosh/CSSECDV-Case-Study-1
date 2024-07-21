@@ -270,28 +270,33 @@ public class Frame extends javax.swing.JFrame {
         main.sqlite.addUser(username, password);
     }
     
-    public boolean advancedLoginValidationSuccessful(String username, String Password){
+    public boolean advancedLoginValidationSuccessful(String username, String password){
         
         String dbPassword = main.sqlite.getPassword(username);
+        int MAX_FAILED_LOGIN = 3;
         
-        System.out.println(dbPassword);
+        System.out.println("Password: " + password);
+        System.out.println("DB Password: " + dbPassword);        
         
-        // int numFailedAttempts = SQLite.getUserFailedAttempts(username)
-        // int userLockedStatus = SQLite.getLockedStatus(username)
-        // int userLockoutEnd = SQLite.getUserLockoutEnd(username)
-
-        // if (userLockoutEnd > time.now || userLockedStatus == 1) -> promp cannot login right now, try again later 
-        // else (unlocked) 
-            // if (!isCredentialsValid(username, password)) -> frame.loginFailed(username); -> in frame -> SQLIte, increment user's failed attempts
-                // if (numFailedAttempts < 4)-> prompt login failed 
-                // else if (numFailedAttempts == 4) -> prompt warning 
-                // else SQLite.lockAccount(username) -> timestamping 
-            // else (valid credentials)
-                // SQLite.unlockUser(username) -> also includes resetting failed attempts
-
-        // use this to prompt error msgs here
-//        JOptionPane.showMessageDialog(this, "Login failed. Please check your username and password and try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+        if(!password.equals(dbPassword)){
+            main.sqlite.updateFailedAttempts(username, "failed", MAX_FAILED_LOGIN);
             
+            if(!main.sqlite.isUserLocked(username)){
+                int currentFailedAttempts = main.sqlite.getFailedAttempts(username);
+                
+                if(currentFailedAttempts == MAX_FAILED_LOGIN - 1){
+                    JOptionPane.showMessageDialog(this, "Your account will be locked after one more failed login attempt. Please contact tech support to verify your credentials", "WARNING", JOptionPane.WARNING_MESSAGE);                    
+                } 
+                
+                if(currentFailedAttempts == MAX_FAILED_LOGIN){
+                    JOptionPane.showMessageDialog(this, "Cannot login at this time. Please try again later or contact tech support for assistance.", "Login Failed", JOptionPane.ERROR_MESSAGE);                    
+                }
+            }
+        } else {
+            main.sqlite.updateFailedAttempts(username, "successful", MAX_FAILED_LOGIN);
+            JOptionPane.showMessageDialog(this, "Welcome " + username + "!", "Login Successful", JOptionPane.INFORMATION_MESSAGE);                                
+        }
+        
         return false;
     }
     
