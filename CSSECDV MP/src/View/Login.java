@@ -104,14 +104,14 @@ public class Login extends javax.swing.JPanel {
             
             try{
                 
-                //check user name
-                checkUsername(username);
+//                //check user name
+//                checkUsername(username);
                 
                 //check if user is locked
                 verifyIfUserLocked(username);
                 
                 //check if password is correct
-                checkPassword(username, password);
+                checkCredentials(username, password);
                 
                 JOptionPane.showMessageDialog(this, "User successfully logged in", "Login Successful", JOptionPane.INFORMATION_MESSAGE);
                 frame.mainNav();
@@ -122,12 +122,12 @@ public class Login extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_loginBtnActionPerformed
 
-    private void checkUsername(String username) throws LoginException {
-        if(!frame.usernameExist(username))
-            throw new LoginException();
-    }
+//    private void checkUsername(String username) throws LoginException {
+//        if(!frame.usernameExist(username))
+//            throw new LoginException();
+//    }
     
-    private void checkPassword(String username, String password) throws LoginException {
+    private void checkCredentials(String username, String password) throws LoginException {
         String hashedPassword = passwordHasher.hash(passwordHasher.hash(password, "SHA-1"), "SHA-256");
         if(!frame.attemptLoginSuccessful(username, hashedPassword))
             throw new LoginException();
@@ -135,8 +135,11 @@ public class Login extends javax.swing.JPanel {
     
      private void verifyIfUserLocked(String username) throws AttemptException {
          
-         if(!frame.attemptUnlockSuccessful(username))
+         if(!frame.checkIfUSerLocked(username))
              throw new AttemptException();
+         
+//         if(!frame.attemptUnlockSuccessful(username))
+//             throw new AttemptException();
          
      }
 

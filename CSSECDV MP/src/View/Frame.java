@@ -318,44 +318,62 @@ public class Frame extends javax.swing.JFrame {
     
     public boolean attemptLoginSuccessful(String username, String password){
         
-        //check if username and password is correct
-        if(!main.sqlite.isLoginSuccessful(username, password)){
-            
-            this.logAction("ATTEMPT_LOGIN", username, String.format("[FAIL] Username and password not matched."));
-            //if not, increase locked 
-            int value = main.sqlite.increaseUserLock(username);
-            this.logAction("ATTEMPT_INCREASE", username, String.format("Number of Attempts for User %s = %d", username, value));
-            
-            if(value >= MAX_LOGIN){
-                //if locked > MAX_LOGIN, lock user
-                main.sqlite.lockUser(username, MAX_TIMEOUT);
-                this.logAction("USER_LOCK", username, String.format("[FAIL] User %s locked due to max login attempts.", username));
+        if (this.usernameExist(username)){
+            //check if username and password is correct
+            if(!main.sqlite.isLoginSuccessful(username, password)){
+
+
+                this.logAction("ATTEMPT_LOGIN", username, String.format("[FAIL] Username and password not matched."));
+                //if not, increase locked 
+                int value = main.sqlite.increaseUserLock(username, MAX_LOGIN);
+                this.logAction("ATTEMPT_INCREASE", username, String.format("Number of Attempts for User %s = %d", username, value));
+
+                if(value >= MAX_LOGIN){
+                    //if locked > MAX_LOGIN, lock user
+    //                main.sqlite.lockUser(username, MAX_TIMEOUT);
+                    this.logAction("USER_LOCK", username, String.format("[FAIL] User %s locked due to max login attempts.", username));
+                }
+
+                return false;
             }
-            
-            return false;
+
+            this.logAction("ATTEMPT_LOGIN", username, String.format("[SUCCESS] Attempted Username and password matched."));
+            return true;
+ 
         }
         
-        this.logAction("ATTEMPT_LOGIN", username, String.format("[SUCCESS] Attempted Username and password matched."));
-        return true;
-       
+        return false;
     }
     
-    public boolean attemptUnlockSuccessful(String username){
-        if(!main.sqlite.isUserUnlocked(username, MAX_LOGIN)){
-            
+    
+    public boolean checkIfUSerLocked(String username){
+        if(!main.sqlite.isUserUnlocked(username)){
+            int value = main.sqlite.increaseUserLock(username, MAX_LOGIN);
             this.logAction("USER_LOCK", username, String.format("[FAIL] User = %s currently locked from logging in.", username));
-            
-            if(main.sqlite.tryUnlock(username)){
-                this.logAction("ATTEMPT_UNLOCK", username, String.format("[SUCCESS] User = %s unlocked due to expired timeout.", username));
-                return true;
-            }
-            this.logAction("ATTEMPT_UNLOCK", username, String.format("[FAIL] Current timeout is not yet expired."));
+            this.logAction("ATTEMPT_INCREASE", username, String.format("Number of Attempts for User %s = %d", username, value));
             return false;
         }
-        
-        this.logAction("USER_LOCK", username, String.format("[SUCCESS] User = %s is not locked from logging in.", username));
         return true;
     }
+    
+    
+//    
+//    public boolean attemptUnlockSuccessful(String username){
+//        if(!main.sqlite.isUserUnlocked(username, MAX_LOGIN)){
+//            
+//            this.logAction("USER_LOCK", username, String.format("[FAIL] User = %s currently locked from logging in.", username));
+//            
+//            if(main.sqlite.tryUnlock(username)){
+//                this.logAction("ATTEMPT_UNLOCK", username, String.format("[SUCCESS] User = %s unlocked due to expired timeout.", username));
+//                return true;
+//            }
+//            this.logAction("ATTEMPT_UNLOCK", username, String.format("[FAIL] Current timeout is not yet expired."));
+//            return false;
+//        }
+//        
+//        this.logAction("USER_LOCK", username, String.format("[SUCCESS] User = %s is not locked from logging in.", username));
+//        return true;
+//    }
     
     public void logAction(String event, String username, String desc){
         

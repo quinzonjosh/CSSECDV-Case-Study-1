@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 import java.util.TimeZone;
 
 public class SQLite {
@@ -249,22 +250,7 @@ public class SQLite {
             
             if(rs.next()){
 //                System.out.println("User: " + rs.getString("username") + " exist.");
-                if (rs.getBoolean(1)){
-                    
-                    //unlock user
-                    sql = "UPDATE users SET failed_attempts = ?, locked = ?, lockout_time = ? WHERE username = ?";
-                    PreparedStatement two = conn.prepareStatement(sql);
-                    two.setInt(1, 0);
-                    two.setInt(2, 0);
-                    two.setNull(3, java.sql.Types.VARCHAR);
-                    two.setString(4, username);
-                    
-                    two.executeUpdate();
-                    
-                    return true;
-                }
-                   
-                return false;
+                return rs.getBoolean(1);
             }
 
         } catch (Exception ex) {
@@ -274,10 +260,10 @@ public class SQLite {
         return false;
     }
     
-    public int increaseUserLock(String username){
+    public int increaseUserLock(String username, int max){
         try (Connection conn = DriverManager.getConnection(driverURL)){
             
-            String sql = "SELECT failed_attempts, locked FROM users WHERE username = ?";
+            String sql = "SELECT failed_attempts FROM users WHERE username = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, username);
          
@@ -287,17 +273,23 @@ public class SQLite {
             if(rs.next()){
 //                System.out.println("User: " + rs.getString("username") + " exist.");
                 int failed = rs.getInt(1) + 1;
-                int locked  = rs.getInt(2) + 1;
-                sql = "UPDATE users SET failed_attempts = ?, locked = ? WHERE username = ?";
+ 
+                sql = "UPDATE users SET failed_attempts = ? WHERE username = ?";
                 
                 pstmt = conn.prepareStatement(sql);
                 pstmt.setInt(1, failed);
-                pstmt.setInt(2, locked);
-                pstmt.setString(3, username);
+                pstmt.setString(2, username);
                 
                 pstmt.executeUpdate();
+//                conn.close();
                 
-                return locked;
+                if(failed >= max){
+                    conn.close();
+                    this.lockUser(username);
+                }
+                    
+                
+                return failed;
             }
 
         } catch (Exception ex) {
@@ -307,13 +299,13 @@ public class SQLite {
         return -1;
     }
     
-    public boolean isUserUnlocked(String username, int time){
-        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked < ?)";
+    public boolean isUserUnlocked(String username){
+        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = ?)";
         try (Connection conn = DriverManager.getConnection(driverURL);
                 PreparedStatement pstmt = conn.prepareStatement(sql)){
             
             pstmt.setString(1, username);
-            pstmt.setInt(2, time);
+            pstmt.setInt(2, 0);
             ResultSet rs = pstmt.executeQuery();
             
             if(rs.next()){
@@ -328,78 +320,101 @@ public class SQLite {
         return false;
     }
     
-    public boolean tryUnlock(String username){
+//    public boolean tryUnlock(String username){
+//        try (Connection conn = DriverManager.getConnection(driverURL)){
+//            
+//            String sql = "SELECT lockout_time FROM users WHERE username = ?";
+//            PreparedStatement pstmt = conn.prepareStatement(sql);
+//            pstmt.setString(1, username);
+//         
+//            
+//            ResultSet rs = pstmt.executeQuery();
+//            
+//            if(rs.next()){
+//                
+//                String retrievedDateString = rs.getString("lockout_time");
+//                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+//                sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
+//                
+//                Date retrievedDate = sdf.parse(retrievedDateString);
+//                Date now = new Date();
+//
+//                //if date now is before timeout date, return false (failed attempt)
+//                if (now.before(retrievedDate))
+//                    return false;
+//  
+//                //else now is equal or after timout date, unlock user
+//                else {
+//                    
+////                  unlock user
+//                    sql = "UPDATE users SET locked = ?, lockout_time = ? WHERE username = ?";
+//                    pstmt = conn.prepareStatement(sql);
+//                    pstmt.setInt(1, 0);
+//                    pstmt.setNull(2, java.sql.Types.VARCHAR);
+//                    pstmt.setString(3, username);
+//                    
+//                    pstmt.executeUpdate();
+//              
+//                    return true;
+//                }
+//
+//            }
+//
+//        } catch (Exception ex) {
+//            System.out.print(ex);
+//        }
+//        
+//        return false;
+//    }
+    
+    public void lockUser(String username){
+        
+      
+        // to lock user, store lockout time + 15 minutes
         try (Connection conn = DriverManager.getConnection(driverURL)){
             
-            String sql = "SELECT lockout_time FROM users WHERE username = ?";
+            String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = ?)";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, username);
+            pstmt.setInt(2, 0);
          
-            
             ResultSet rs = pstmt.executeQuery();
             
             if(rs.next()){
                 
-                String retrievedDateString = rs.getString("lockout_time");
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-                sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
-                
-                Date retrievedDate = sdf.parse(retrievedDateString);
-                Date now = new Date();
-
-                //if date now is before timeout date, return false (failed attempt)
-                if (now.before(retrievedDate))
-                    return false;
-  
-                //else now is equal or after timout date, unlock user
-                else {
+                if(rs.getBoolean(1)){
                     
-//                  unlock user
-                    sql = "UPDATE users SET locked = ?, lockout_time = ? WHERE username = ?";
+                    sql = "UPDATE users SET locked = ? WHERE username = ?";
                     pstmt = conn.prepareStatement(sql);
-                    pstmt.setInt(1, 0);
-                    pstmt.setNull(2, java.sql.Types.VARCHAR);
-                    pstmt.setString(3, username);
-                    
+  
+                    Random random = new Random();
+                    pstmt.setInt(1, random.nextInt(1, Integer.MAX_VALUE));
+                    pstmt.setString(2, username);
+
                     pstmt.executeUpdate();
-              
-                    return true;
                 }
-
             }
-
-        } catch (Exception ex) {
-            System.out.print(ex);
-        }
-        
-        return false;
-    }
-    
-    public void lockUser(String username, int time){
-        
-        // to lock user, store lockout time + 15 minutes
-        try (Connection conn = DriverManager.getConnection(driverURL)){
             
             
-            // Step 1: Get the current date and time
-            Calendar calendar = Calendar.getInstance();
-
-            // Step 2: Add 15 minutes to the current time
-            calendar.add(Calendar.MINUTE, time);
-            Date futureDate = calendar.getTime();
-
-            // Step 3: Format the future date and time
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-            sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
-            String formattedDate = sdf.format(futureDate);
-            
-            
-            String sql = "UPDATE users SET lockout_time = ? WHERE username = ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, formattedDate);
-            pstmt.setString(2, username);
-            
-            pstmt.executeUpdate();
+//            // Step 1: Get the current date and time
+//            Calendar calendar = Calendar.getInstance();
+//
+//            // Step 2: Add 15 minutes to the current time
+//            calendar.add(Calendar.MINUTE, time);
+//            Date futureDate = calendar.getTime();
+//
+//            // Step 3: Format the future date and time
+//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+//            sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
+//            String formattedDate = sdf.format(futureDate);
+//            
+//            
+//            String sql = "UPDATE users SET lockout_time = ? WHERE username = ?";
+//            PreparedStatement pstmt = conn.prepareStatement(sql);
+//            pstmt.setString(1, formattedDate);
+//            pstmt.setString(2, username);
+//            
+//            pstmt.executeUpdate();
 
         } catch (Exception ex) {
             System.out.print(ex);
