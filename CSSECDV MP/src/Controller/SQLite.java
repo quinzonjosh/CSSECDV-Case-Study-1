@@ -243,6 +243,28 @@ public class SQLite {
         return histories;
     }
     
+    public String getLockoutEnd(String username){
+        String sql = "SELECT lockout_end FROM users WHERE username = LOWER(?)";
+        
+        String lockoutEnd = "";
+        
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+        
+            pstmt.setString(1, username);
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+                lockoutEnd = rs.getString("lockout_end");
+            }            
+        } catch (Exception ex) {
+            System.out.print(ex);
+        } 
+                
+        return lockoutEnd;
+    }
+    
     public ArrayList<Logs> getLogs(){
         String sql = "SELECT id, event, username, desc, timestamp FROM logs";
         ArrayList<Logs> logs = new ArrayList<Logs>();
@@ -340,26 +362,26 @@ public class SQLite {
         return users;
     }
     
-    public boolean isUserLocked(String username){
-        String sql = "SELECT locked FROM users WHERE username = LOWER(?)";
-        
-        try (Connection conn = DriverManager.getConnection(driverURL);
-                PreparedStatement pstmt = conn.prepareStatement(sql)){
-            
-            pstmt.setString(1, username);
-            
-            ResultSet rs = pstmt.executeQuery();
-            
-            if(rs.next()){
-                return rs.getInt("locked") == 1;
-            }
-            
-        } catch (Exception ex) {
-            System.out.print(ex);
-        } 
-        
-        return false;
-    }
+//    public boolean isUserLocked(String username){
+//        String sql = "SELECT locked FROM users WHERE username = LOWER(?)";
+//        
+//        try (Connection conn = DriverManager.getConnection(driverURL);
+//                PreparedStatement pstmt = conn.prepareStatement(sql)){
+//            
+//            pstmt.setString(1, username);
+//            
+//            ResultSet rs = pstmt.executeQuery();
+//            
+//            if(rs.next()){
+//                return rs.getInt("locked") == 1;
+//            }
+//            
+//        } catch (Exception ex) {
+//            System.out.print(ex);
+//        } 
+//        
+//        return false;
+//    }
         
     private void lockUser(String username){
         String sql = "UPDATE users SET locked = 1 WHERE username = LOWER(?)";
@@ -403,37 +425,69 @@ public class SQLite {
         }
     }
     
-    public void updateFailedAttempts(String username, String status, int MAX_FAILED_LOGIN){
-        String sql = "SELECT failed_attempts FROM users WHERE username = LOWER(?)";
-        int currentFailedAttempts = 0;
-               
+//    public void updateFailedAttempts(String username, String status, int MAX_FAILED_LOGIN){
+//        String sql = "SELECT failed_attempts FROM users WHERE username = LOWER(?)";
+//        int currentFailedAttempts = 0;
+//               
+//        try (Connection conn = DriverManager.getConnection(driverURL);
+//                PreparedStatement pstmt = conn.prepareStatement(sql)){
+//            
+//            pstmt.setString(1, username);
+//            
+//            ResultSet rs = pstmt.executeQuery();
+//            if(rs.next()){
+//                currentFailedAttempts = rs.getInt(1);
+//            }
+//            
+//            sql = "UPDATE users SET failed_attempts = ? WHERE username = LOWER(?)";
+//            PreparedStatement pstmt2 = conn.prepareStatement(sql);
+//            
+//            if(status.equals("successful")){
+//                pstmt2.setInt(1, 0);
+//                unlockUser(username);
+//            } else {
+//                pstmt2.setInt(1, ++currentFailedAttempts);
+//                if(currentFailedAttempts == MAX_FAILED_LOGIN){
+//                    lockUser(username);
+//                }
+//            }
+//            
+//            pstmt2.setString(1, username);
+//            
+//            pstmt2.executeUpdate();
+//
+//        } catch (Exception ex) {
+//            System.out.print(ex);
+//        }
+//    }
+    
+    public void updateFailedAttempts(String username, int failedAttempts){
+        String sql = "UPDATE users SET failed_attempts = ? WHERE username = LOWER(?)";
+
         try (Connection conn = DriverManager.getConnection(driverURL);
                 PreparedStatement pstmt = conn.prepareStatement(sql)){
             
-            pstmt.setString(1, username);
+            pstmt.setInt(1, failedAttempts);
+            pstmt.setString(2, username);
             
-            ResultSet rs = pstmt.executeQuery();
-            if(rs.next()){
-                currentFailedAttempts = rs.getInt(1);
-            }
+            pstmt.executeUpdate();
             
-            sql = "UPDATE users SET failed_attempts = ? WHERE username = LOWER(?)";
-            PreparedStatement pstmt2 = conn.prepareStatement(sql);
-            
-            if(status.equals("successful")){
-                pstmt2.setInt(1, 0);
-                unlockUser(username);
-            } else {
-                pstmt2.setInt(1, ++currentFailedAttempts);
-                if(currentFailedAttempts == MAX_FAILED_LOGIN){
-                    lockUser(username);
-                }
-            }
-            
-            pstmt2.setString(1, username);
-            
-            pstmt2.executeUpdate();
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+    }
+    
+    public void updateLockoutEnd(String username, String lockoutEnd){
+        String sql = "UPDATE users SET lockout_end = ? WHERE username = LOWER(?)";
 
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+            
+            pstmt.setString(1, lockoutEnd);
+            pstmt.setString(2, username);
+            
+            pstmt.executeUpdate();
+            
         } catch (Exception ex) {
             System.out.print(ex);
         }

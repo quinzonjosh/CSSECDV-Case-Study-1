@@ -10,6 +10,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -270,34 +273,60 @@ public class Frame extends javax.swing.JFrame {
         main.sqlite.addUser(username, password);
     }
     
+    private boolean isLockoutEndBeforeToday(String lockoutEndStr){
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate lockoutEndDate = LocalDate.parse(lockoutEndStr, formatter);
+        
+        return lockoutEndDate.isBefore(LocalDate.now()) || lockoutEndDate.isEqual(LocalDate.now());   
+    }
+    
     public boolean advancedLoginValidationSuccessful(String username, String password){
         
-        String dbPassword = main.sqlite.getPassword(username);
-        int MAX_FAILED_LOGIN = 3;
+        String lockoutEndStr = main.sqlite.getLockoutEnd(username);
         
-        System.out.println("Password: " + password);
-        System.out.println("DB Password: " + dbPassword);        
-        
-        if(!password.equals(dbPassword)){
-            main.sqlite.updateFailedAttempts(username, "failed", MAX_FAILED_LOGIN);
+        if(lockoutEndStr == null || isLockoutEndBeforeToday(lockoutEndStr)) {
             
-            if(!main.sqlite.isUserLocked(username)){
-                int currentFailedAttempts = main.sqlite.getFailedAttempts(username);
-                
-                if(currentFailedAttempts == MAX_FAILED_LOGIN - 1){
-                    JOptionPane.showMessageDialog(this, "Your account will be locked after one more failed login attempt. Please contact tech support to verify your credentials", "WARNING", JOptionPane.WARNING_MESSAGE);                    
-                } 
-                
-                if(currentFailedAttempts == MAX_FAILED_LOGIN){
-                    JOptionPane.showMessageDialog(this, "Cannot login at this time. Please try again later or contact tech support for assistance.", "Login Failed", JOptionPane.ERROR_MESSAGE);                    
+            int MAX_FAILED_LOGINS = 5;
+            int curentFailedAttempts = main.sqlite.getFailedAttempts(username);
+            String dbPassword = main.sqlite.getPassword(username);
+        
+            if (!password.equals(dbPassword)){
+                main.sqlite.updateFailedAttempts(username, ++curentFailedAttempts);
+                if (curentFailedAttempts == MAX_FAILED_LOGINS - 1){
+                    JOptionPane.showMessageDialog(this, "Your account will be locked after one more failed login attempt. "
+                            + "Please contact tech support to verify your credentials.", "Warning", JOptionPane.WARNING_MESSAGE);
                 }
-            }
+                else if(curentFailedAttempts >= MAX_FAILED_LOGINS){
+                    main.sqlite.updateLockoutEnd(username, computeLockoutTime(curentFailedAttempts, MAX_FAILED_LOGINS));
+                    JOptionPane.showMessageDialog(this, "Cannot log in right now. Please try again later.", "Login Failed", JOptionPane.ERROR_MESSAGE);                
+                } else {
+                    JOptionPane.showMessageDialog(this, "Login failed. Please check your username and password and try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                main.sqlite.updateFailedAttempts(username, 0);
+                JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                return true;
+            }        
         } else {
-            main.sqlite.updateFailedAttempts(username, "successful", MAX_FAILED_LOGIN);
-            JOptionPane.showMessageDialog(this, "Welcome " + username + "!", "Login Successful", JOptionPane.INFORMATION_MESSAGE);                                
+            JOptionPane.showMessageDialog(this, "Cannot log in right now. Please try again later.", "Login Failed", JOptionPane.ERROR_MESSAGE);                            
         }
         
+
+        
         return false;
+    }
+    
+    public String computeLockoutTime(int currentFailedAttempts, int MAX_FAILED_LOGINS){
+        
+        int LOCKOUT_TIME_MINUTES = 20;
+        int ADDITIONAL_PENALTY_MINUTES = 5;
+        
+        int lockoutMinutes = LOCKOUT_TIME_MINUTES + ADDITIONAL_PENALTY_MINUTES * (currentFailedAttempts - MAX_FAILED_LOGINS);
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");        
+        LocalDateTime lockoutEndDate = LocalDateTime.now().plusMinutes(lockoutMinutes);
+        return lockoutEndDate.format(formatter);
     }
     
     public boolean isPasswordPwned(String hashedPassword){
@@ -334,10 +363,6 @@ public class Frame extends javax.swing.JFrame {
     
     public boolean usernameExist(String username){
         return main.sqlite.usernameExist(username);
-    }
-    
-    public boolean isCredentialsValid(String username, String password){
-        return main.sqlite.isCredentialsValid(username, password);
     }
     
     public void logAction(String event, String username, String desc, String timestamp){
