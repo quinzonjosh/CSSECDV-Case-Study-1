@@ -28,7 +28,7 @@ public class MgmtUser extends javax.swing.JPanel {
     public MgmtUser(SQLite sqlite) {
         initComponents();
         this.sqlite = sqlite;
-        tableModel = (DefaultTableModel)table.getModel();
+        tableModel = (DefaultTableModel) table.getModel();
         table.getTableHeader().setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 14));
         
 //        UNCOMMENT TO DISABLE BUTTONS
@@ -46,12 +46,19 @@ public class MgmtUser extends javax.swing.JPanel {
         
 //      LOAD CONTENTS
         ArrayList<User> users = sqlite.getUsers();
+        System.out.println("Table Columns: " + tableModel.getColumnCount());
+        
         for(int nCtr = 0; nCtr < users.size(); nCtr++){
+            System.out.println("Table attempts: " + users.get(nCtr).getFailed_attempts());
+            
             tableModel.addRow(new Object[]{
                 users.get(nCtr).getUsername(), 
                 users.get(nCtr).getPassword(), 
                 users.get(nCtr).getRole(), 
+                users.get(nCtr).getFailed_attempts(),
                 users.get(nCtr).getLocked()});
+            
+            
         }
     }
 
@@ -82,17 +89,17 @@ public class MgmtUser extends javax.swing.JPanel {
         table.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
         table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Username", "Password", "Role", "Locked"
+                "Username", "Password", "Role", "Failed_Attempts", "Locked"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false
+                false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -106,10 +113,10 @@ public class MgmtUser extends javax.swing.JPanel {
             table.getColumnModel().getColumn(0).setPreferredWidth(160);
             table.getColumnModel().getColumn(1).setPreferredWidth(400);
             table.getColumnModel().getColumn(2).setPreferredWidth(100);
-            table.getColumnModel().getColumn(3).setPreferredWidth(100);
+            table.getColumnModel().getColumn(3).setPreferredWidth(200);
+            table.getColumnModel().getColumn(4).setPreferredWidth(100);
         }
 
-        editRoleBtn.setBackground(new java.awt.Color(255, 255, 255));
         editRoleBtn.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         editRoleBtn.setText("EDIT ROLE");
         editRoleBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -118,7 +125,6 @@ public class MgmtUser extends javax.swing.JPanel {
             }
         });
 
-        deleteBtn.setBackground(new java.awt.Color(255, 255, 255));
         deleteBtn.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         deleteBtn.setText("DELETE");
         deleteBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -127,7 +133,6 @@ public class MgmtUser extends javax.swing.JPanel {
             }
         });
 
-        lockBtn.setBackground(new java.awt.Color(255, 255, 255));
         lockBtn.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         lockBtn.setText("LOCK/UNLOCK");
         lockBtn.setToolTipText("");
@@ -137,7 +142,6 @@ public class MgmtUser extends javax.swing.JPanel {
             }
         });
 
-        chgpassBtn.setBackground(new java.awt.Color(255, 255, 255));
         chgpassBtn.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         chgpassBtn.setText("CHANGE PASS");
         chgpassBtn.addActionListener(new java.awt.event.ActionListener() {

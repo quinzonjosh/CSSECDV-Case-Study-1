@@ -92,6 +92,7 @@ public class SQLite {
             + " username TEXT NOT NULL UNIQUE,\n"
             + " password TEXT NOT NULL,\n"
             + " role INTEGER DEFAULT 2,\n"
+            + " failed_attempts INTEGER DEFAULT 0, \n"
             + " locked INTEGER DEFAULT 0\n"
             + ");";
 
@@ -484,7 +485,7 @@ public class SQLite {
     }
     
     public ArrayList<User> getUsers(){
-        String sql = "SELECT id, username, password, role, locked FROM users";
+        String sql = "SELECT id, username, password, role, failed_attempts, locked FROM users";
         ArrayList<User> users = new ArrayList<User>();
         
         try (Connection conn = DriverManager.getConnection(driverURL);
@@ -496,7 +497,9 @@ public class SQLite {
                                    rs.getString("username"),
                                    rs.getString("password"),
                                    rs.getInt("role"),
+                                   rs.getInt("failed_attempts"),
                                    rs.getInt("locked")));
+                System.out.println("Attempts: " + users.getLast().getFailed_attempts());
             }
         } catch (Exception ex) {}
         return users;
