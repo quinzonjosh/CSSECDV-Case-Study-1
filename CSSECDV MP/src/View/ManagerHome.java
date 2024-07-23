@@ -50,6 +50,10 @@ public class ManagerHome extends javax.swing.JPanel {
         usersBtn.setVisible(false);
 //        productsBtn.setVisible(false);
         logsBtn.setVisible(false);
+        
+        
+        // disable specific buttons per functionality according to role
+        mgmtProduct.disablePurchaseButton();
     }
     
     public void showPnl(String panelName){

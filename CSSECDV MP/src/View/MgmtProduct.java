@@ -245,7 +245,23 @@ public class MgmtProduct extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_deleteBtnActionPerformed
-
+    
+    public void disablePurchaseButton(){
+        purchaseBtn.setVisible(false);
+    }
+    
+    public void disableAddProductButton(){
+        addBtn.setVisible(false);
+    }
+    
+    public void disableEditProductButton(){
+        editBtn.setVisible(false);
+    }
+    
+    public void disableDeleteProductButton(){
+        deleteBtn.setVisible(false);
+    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBtn;

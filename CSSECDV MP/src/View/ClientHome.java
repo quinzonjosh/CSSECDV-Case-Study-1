@@ -50,6 +50,11 @@ public class ClientHome extends javax.swing.JPanel {
         usersBtn.setVisible(false);
 //        productsBtn.setVisible(false);
         logsBtn.setVisible(false);
+        
+        // disable specific buttons per functionality according to role
+        mgmtProduct.disableAddProductButton();
+        mgmtProduct.disableEditProductButton();
+        mgmtProduct.disableDeleteProductButton();
     }
     
     public void showPnl(String panelName){
