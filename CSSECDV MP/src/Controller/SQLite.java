@@ -301,18 +301,23 @@ public class SQLite {
     }
     
     public boolean isUserUnlocked(String username){
-        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = ?)";
+        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = ? AND role != ?)";
         try (Connection conn = DriverManager.getConnection(driverURL);
                 PreparedStatement pstmt = conn.prepareStatement(sql)){
             
             pstmt.setString(1, username);
             pstmt.setInt(2, 0);
+            pstmt.setInt(3, 1);
+            
             ResultSet rs = pstmt.executeQuery();
+            
             
             if(rs.next()){
 //                System.out.println("User: " + rs.getString("username") + " exist.");
                 return rs.getBoolean(1);
             }
+            
+            
 
         } catch (Exception ex) {
             System.out.print(ex);
@@ -370,56 +375,47 @@ public class SQLite {
     
     public void lockUser(String username){
         
-      
-        // to lock user, store lockout time + 15 minutes
-        try (Connection conn = DriverManager.getConnection(driverURL)){
+        if(this.isUserUnlocked(username)){
             
-            String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, username);
-            pstmt.setInt(2, 0);
-         
-            ResultSet rs = pstmt.executeQuery();
-            
-            if(rs.next()){
-                
-                if(rs.getBoolean(1)){
-                    
-                    sql = "UPDATE users SET locked = ? WHERE username = ?";
-                    pstmt = conn.prepareStatement(sql);
-  
-                    Random random = new Random();
-                    pstmt.setInt(1, random.nextInt(1, Integer.MAX_VALUE));
-                    pstmt.setString(2, username);
+            try (Connection conn = DriverManager.getConnection(driverURL)){
+                String sql = "UPDATE users SET locked = ?, role = ? WHERE username = ?";
+                PreparedStatement pstmt = conn.prepareStatement(sql);
 
-                    pstmt.executeUpdate();
-                }
+                Random random = new Random();
+                pstmt.setInt(1, random.nextInt(1, Integer.MAX_VALUE));
+                pstmt.setInt(2, 1);
+                pstmt.setString(3, username);
+
+                pstmt.executeUpdate();
             }
-            
-            
-//            // Step 1: Get the current date and time
-//            Calendar calendar = Calendar.getInstance();
-//
-//            // Step 2: Add 15 minutes to the current time
-//            calendar.add(Calendar.MINUTE, time);
-//            Date futureDate = calendar.getTime();
-//
-//            // Step 3: Format the future date and time
-//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//            sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
-//            String formattedDate = sdf.format(futureDate);
-//            
-//            
-//            String sql = "UPDATE users SET lockout_time = ? WHERE username = ?";
-//            PreparedStatement pstmt = conn.prepareStatement(sql);
-//            pstmt.setString(1, formattedDate);
-//            pstmt.setString(2, username);
-//            
-//            pstmt.executeUpdate();
-
-        } catch (Exception ex) {
-            System.out.print(ex);
+            catch (Exception ex) {
+//            System.out.print(ex);
+            }
         }
+        
+//        try (Connection conn = DriverManager.getConnection(driverURL)){
+//            
+//            String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = ? AND role != ?)";
+//            PreparedStatement pstmt = conn.prepareStatement(sql);
+//            pstmt.setString(1, username);
+//            pstmt.setInt(2, 0);
+//            pstmt.setInt(3, 1);
+//         
+//            ResultSet rs = pstmt.executeQuery();
+//            
+//            if(rs.next()){
+//                
+//                if(rs.getBoolean(1)){
+//                    
+//                    
+//                }
+//            }
+//            
+//           
+//
+//        } catch (Exception ex) {
+//            System.out.print(ex);
+//        }
     }
     
     public ArrayList<History> getHistory(){
@@ -499,7 +495,7 @@ public class SQLite {
                                    rs.getInt("role"),
                                    rs.getInt("failed_attempts"),
                                    rs.getInt("locked")));
-                System.out.println("Attempts: " + users.getLast().getFailed_attempts());
+//                System.out.println("Attempts: " + users.getLast().getFailed_attempts());
             }
         } catch (Exception ex) {}
         return users;

@@ -46,10 +46,10 @@ public class MgmtUser extends javax.swing.JPanel {
         
 //      LOAD CONTENTS
         ArrayList<User> users = sqlite.getUsers();
-        System.out.println("Table Columns: " + tableModel.getColumnCount());
+//        System.out.println("Table Columns: " + tableModel.getColumnCount());
         
         for(int nCtr = 0; nCtr < users.size(); nCtr++){
-            System.out.println("Table attempts: " + users.get(nCtr).getFailed_attempts());
+//            System.out.println("Table attempts: " + users.get(nCtr).getFailed_attempts());
             
             tableModel.addRow(new Object[]{
                 users.get(nCtr).getUsername(), 
@@ -193,6 +193,9 @@ public class MgmtUser extends javax.swing.JPanel {
                 "EDIT USER ROLE", JOptionPane.QUESTION_MESSAGE, null, options, options[(int)tableModel.getValueAt(table.getSelectedRow(), 2) - 1]);
             
             if(result != null){
+                
+                
+                
                 System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
                 System.out.println(result.charAt(0));
             }

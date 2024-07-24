@@ -273,7 +273,7 @@ public class Frame extends javax.swing.JFrame {
         main.sqlite.addUser(username, password, 2);
     }
     
-        public boolean isPasswordPwned(String hashedPassword){
+    public boolean isPasswordPwned(String hashedPassword){
                 
         String prefix = hashedPassword.substring(0,5);
         String suffix = hashedPassword.substring(5).toUpperCase();
