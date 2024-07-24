@@ -231,12 +231,8 @@ public class MgmtUser extends javax.swing.JPanel {
 
     private void lockBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lockBtnActionPerformed
         
-        
-        
         if(table.getSelectedRow() >= 0){
             String state = "lock";
-            
-        
             System.out.println(tableModel.getColumnName(3) + ": " + 
                    tableModel.getValueAt(table.getSelectedRow(), 3) + "");
             
@@ -245,11 +241,8 @@ public class MgmtUser extends javax.swing.JPanel {
                 state = "unlock";
             }
            
-            
             int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to " + state + " " + tableModel.getValueAt(table.getSelectedRow(), 0) + "?", "DELETE USER", JOptionPane.YES_NO_OPTION);
-            
             if (result == JOptionPane.YES_OPTION) {
-                
                 String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
                 System.out.println(username);
                 
@@ -270,13 +263,13 @@ public class MgmtUser extends javax.swing.JPanel {
                     try {
                         this.sqlite.unlockUser(username);
                         JOptionPane.showMessageDialog(this, String.format("User %s has been unlocked.", username), "Unlocking Successful", JOptionPane.INFORMATION_MESSAGE);
-                        this.logAction("CHANGE_TO_LOCK", username, String.format("[SUCCESS] Unlocking user %s successful", username));
+                        this.logAction("CHANGE_TO_UNLOCK", username, String.format("[SUCCESS] Unlocking user %s successful", username));
                         this.init();
                           
                     } catch (Exception e){
                         System.out.println(e);
                         JOptionPane.showMessageDialog(this, String.format("Attempt to unlock user %s has failed.", username), "Unlocking Failed", JOptionPane.ERROR_MESSAGE);
-                        this.logAction("CHANGE_TO_LOCK", username, String.format("[FAIL] Unlocking user %s failed.", username)); 
+                        this.logAction("CHANGE_TO_UNLOCK", username, String.format("[FAIL] Unlocking user %s failed.", username)); 
                     }
                 }
             }
