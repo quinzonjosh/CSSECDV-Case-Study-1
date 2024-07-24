@@ -418,6 +418,26 @@ public class SQLite {
 //        }
     }
     
+    
+    public boolean ChangeUserRoleSuccessful(String username, char role){
+        try (Connection conn = DriverManager.getConnection(driverURL)){
+            String sql = "UPDATE users SET role = ? WHERE username = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+
+            pstmt.setInt(1, Integer.parseInt(String.valueOf(role)));
+            pstmt.setString(2, username);
+
+            pstmt.executeUpdate();
+            
+            return true;
+        }
+        catch(Exception e){
+            System.out.print(e);
+        }
+        
+        return false;
+    }
+    
     public ArrayList<History> getHistory(){
         String sql = "SELECT id, username, name, stock, timestamp FROM history";
         ArrayList<History> histories = new ArrayList<History>();

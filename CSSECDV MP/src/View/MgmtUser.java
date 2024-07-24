@@ -7,7 +7,10 @@ package View;
 
 import Controller.SQLite;
 import Model.User;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.TimeZone;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -194,10 +197,22 @@ public class MgmtUser extends javax.swing.JPanel {
             
             if(result != null){
                 
+                String username = (String) tableModel.getValueAt(table.getSelectedRow(), 0);
+//                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
                 
+                char role = result.charAt(0);
+//                System.out.println(result.charAt(0));
                 
-                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
-                System.out.println(result.charAt(0));
+                if(this.sqlite.ChangeUserRoleSuccessful(username, role)){
+                    JOptionPane.showMessageDialog(this, String.format("User %s changed to role = %s", username, result), "Edit Role Successful", JOptionPane.INFORMATION_MESSAGE);
+                    this.logAction("CHANGE_ROLE", username, String.format("[SUCCESS] Role of User %s changed to role = %c", username, role));
+                    this.init();
+                }
+                else{
+                    JOptionPane.showMessageDialog(this, String.format("User %s attempt to change role to %s has failed. Please contact admin for more details.", username, result), "Edit Role Failed", JOptionPane.ERROR_MESSAGE);
+                    this.logAction("CHANGE_ROLE", username, String.format("[FAIL] Failure on changing user role (selected = %c)", role));
+                }
+             
             }
         }
     }//GEN-LAST:event_editRoleBtnActionPerformed
@@ -247,6 +262,15 @@ public class MgmtUser extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_chgpassBtnActionPerformed
 
+    
+    private void logAction(String event, String username, String desc){
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        sdf.setTimeZone(TimeZone.getDefault()); 
+        String date = sdf.format(new Date());
+        
+        this.sqlite.addLogs(event, username, desc, date);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chgpassBtn;
