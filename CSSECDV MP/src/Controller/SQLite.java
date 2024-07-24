@@ -286,7 +286,9 @@ public class SQLite {
                 
                 if(failed >= max){
                     conn.close();
-                    this.lockUser(username);
+                    if(this.isUserUnlocked(username)){
+                        this.lockUser(username);
+                    }
                 }
                     
                 
@@ -373,25 +375,19 @@ public class SQLite {
 //        return false;
 //    }
     
-    public void lockUser(String username){
-        
-        if(this.isUserUnlocked(username)){
-            
-            try (Connection conn = DriverManager.getConnection(driverURL)){
-                String sql = "UPDATE users SET locked = ?, role = ? WHERE username = ?";
-                PreparedStatement pstmt = conn.prepareStatement(sql);
+    public void lockUser(String username) throws Exception {
+  
+        Connection conn = DriverManager.getConnection(driverURL);
+        String sql = "UPDATE users SET locked = ?, role = ? WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
 
-                Random random = new Random();
-                pstmt.setInt(1, random.nextInt(1, Integer.MAX_VALUE));
-                pstmt.setInt(2, 1);
-                pstmt.setString(3, username);
+        Random random = new Random();
+        pstmt.setInt(1, random.nextInt(1, Integer.MAX_VALUE));
+        pstmt.setInt(2, 1);
+        pstmt.setString(3, username);
 
-                pstmt.executeUpdate();
-            }
-            catch (Exception ex) {
-//            System.out.print(ex);
-            }
-        }
+        pstmt.executeUpdate();
+
         
 //        try (Connection conn = DriverManager.getConnection(driverURL)){
 //            
@@ -418,24 +414,31 @@ public class SQLite {
 //        }
     }
     
+    public void unlockUser(String username) throws Exception {
+        Connection conn = DriverManager.getConnection(driverURL);
+        String sql = "UPDATE users SET locked = ? WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+
+        pstmt.setInt(1, 0);
+        pstmt.setString(2, username);
+
+        pstmt.executeUpdate();
+    }
     
-    public boolean ChangeUserRoleSuccessful(String username, char role){
-        try (Connection conn = DriverManager.getConnection(driverURL)){
-            String sql = "UPDATE users SET role = ? WHERE username = ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-
-            pstmt.setInt(1, Integer.parseInt(String.valueOf(role)));
-            pstmt.setString(2, username);
-
-            pstmt.executeUpdate();
-            
-            return true;
-        }
-        catch(Exception e){
-            System.out.print(e);
-        }
+    
+    
+    
+    public void changeUserRole(String username, char role) throws Exception {
         
-        return false;
+        Connection conn = DriverManager.getConnection(driverURL);
+        String sql = "UPDATE users SET role = ? WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+
+        pstmt.setInt(1, Integer.parseInt(String.valueOf(role)));
+        pstmt.setString(2, username);
+
+        pstmt.executeUpdate();
+        
     }
     
     public ArrayList<History> getHistory(){

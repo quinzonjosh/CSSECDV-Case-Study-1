@@ -197,20 +197,22 @@ public class MgmtUser extends javax.swing.JPanel {
             
             if(result != null){
                 
-                String username = (String) tableModel.getValueAt(table.getSelectedRow(), 0);
+                String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
 //                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
                 
                 char role = result.charAt(0);
 //                System.out.println(result.charAt(0));
                 
-                if(this.sqlite.ChangeUserRoleSuccessful(username, role)){
+                try {
+                    this.sqlite.changeUserRole(username, role);
                     JOptionPane.showMessageDialog(this, String.format("User %s changed to role = %s", username, result), "Edit Role Successful", JOptionPane.INFORMATION_MESSAGE);
                     this.logAction("CHANGE_ROLE", username, String.format("[SUCCESS] Role of User %s changed to role = %c", username, role));
-                    this.init();
+                    this.init();  
                 }
-                else{
-                    JOptionPane.showMessageDialog(this, String.format("User %s attempt to change role to %s has failed. Please contact admin for more details.", username, result), "Edit Role Failed", JOptionPane.ERROR_MESSAGE);
-                    this.logAction("CHANGE_ROLE", username, String.format("[FAIL] Failure on changing user role (selected = %c)", role));
+                catch(Exception e){
+                    System.out.println(e);
+                    JOptionPane.showMessageDialog(this, String.format("User %s attempt to change role to %s has failed.", username, result), "Edit Role Failed", JOptionPane.ERROR_MESSAGE);
+                    this.logAction("CHANGE_ROLE", username, String.format("[FAIL] Failure on changing user role (selected = %c)", role));        
                 }
              
             }
@@ -228,18 +230,59 @@ public class MgmtUser extends javax.swing.JPanel {
     }//GEN-LAST:event_deleteBtnActionPerformed
 
     private void lockBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lockBtnActionPerformed
+        
+        
+        
         if(table.getSelectedRow() >= 0){
             String state = "lock";
-            if("1".equals(tableModel.getValueAt(table.getSelectedRow(), 3) + "")){
+            
+        
+            System.out.println(tableModel.getColumnName(3) + ": " + 
+                   tableModel.getValueAt(table.getSelectedRow(), 3) + "");
+            
+            String locked = tableModel.getValueAt(table.getSelectedRow(), 4) + "";
+            if(!locked.equals("0")){
                 state = "unlock";
             }
+           
             
             int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to " + state + " " + tableModel.getValueAt(table.getSelectedRow(), 0) + "?", "DELETE USER", JOptionPane.YES_NO_OPTION);
             
             if (result == JOptionPane.YES_OPTION) {
-                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
+                
+                String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
+                System.out.println(username);
+                
+                if(state.equals("lock")){
+                    try {
+                        this.sqlite.lockUser(username);
+                        JOptionPane.showMessageDialog(this, String.format("User %s has been locked.", username), "Locking Successful", JOptionPane.INFORMATION_MESSAGE);
+                        this.logAction("CHANGE_TO_LOCK", username, String.format("[SUCCESS] Locking user %s successful", username));
+                        this.init();
+                          
+                    } catch (Exception e){
+                        System.out.println(e);
+                        JOptionPane.showMessageDialog(this, String.format("Attempt to lock user %s has failed.", username), "Locking Failed", JOptionPane.ERROR_MESSAGE);
+                        this.logAction("CHANGE_TO_LOCK", username, String.format("[FAIL] Locking user %s failed.", username)); 
+                    }
+                }
+                else {
+                    try {
+                        this.sqlite.unlockUser(username);
+                        JOptionPane.showMessageDialog(this, String.format("User %s has been unlocked.", username), "Unlocking Successful", JOptionPane.INFORMATION_MESSAGE);
+                        this.logAction("CHANGE_TO_LOCK", username, String.format("[SUCCESS] Unlocking user %s successful", username));
+                        this.init();
+                          
+                    } catch (Exception e){
+                        System.out.println(e);
+                        JOptionPane.showMessageDialog(this, String.format("Attempt to unlock user %s has failed.", username), "Unlocking Failed", JOptionPane.ERROR_MESSAGE);
+                        this.logAction("CHANGE_TO_LOCK", username, String.format("[FAIL] Unlocking user %s failed.", username)); 
+                    }
+                }
             }
         }
+        
+        
     }//GEN-LAST:event_lockBtnActionPerformed
 
     private void chgpassBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chgpassBtnActionPerformed
