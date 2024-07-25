@@ -45,9 +45,6 @@ public class PasswordValidator {
         else return true;
     }
     
-   
-    
-    
     private boolean isPasswordPwned(String hashedPassword){
                 
         String prefix = hashedPassword.substring(0,5);
