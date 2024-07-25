@@ -104,8 +104,8 @@ public class Login extends javax.swing.JPanel {
             
             try{
                 
-//                //check user name
-//                checkUsername(username);
+//              //check user name
+                checkUsername(username);
                 
                 //check if user is locked
                 verifyIfUserLocked(username);
@@ -122,10 +122,10 @@ public class Login extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_loginBtnActionPerformed
 
-//    private void checkUsername(String username) throws LoginException {
-//        if(!frame.usernameExist(username))
-//            throw new LoginException();
-//    }
+    private void checkUsername(String username) throws LoginException {
+        if(!frame.usernameExist(username))
+            throw new LoginException();
+    }
     
     private void checkCredentials(String username, String password) throws LoginException {
         String hashedPassword = hasher.hash(hasher.hash(password, "SHA-1"), "SHA-256");
