@@ -552,19 +552,16 @@ public class SQLite {
         }
     }
     
-    public void removeUser(String username) {
+    public void removeUser(String username) throws Exception {
         String sql = "DELETE FROM users WHERE username=(?)";
         
-        try (Connection conn = DriverManager.getConnection(driverURL);
-            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        
+        pstmt.setString(1, username);
             
-            pstmt.setString(1, username);
-            
-            pstmt.executeUpdate();
-            System.out.println("User " + username + " has been deleted.");
-        } catch (Exception ex) {
-            System.out.print(ex);
-        }
+        pstmt.executeUpdate();
+        System.out.println("User " + username + " has been deleted.");
     }
     
     public Product getProduct(String name){
