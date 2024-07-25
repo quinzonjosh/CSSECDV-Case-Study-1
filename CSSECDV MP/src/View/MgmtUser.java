@@ -5,10 +5,14 @@
  */
 package View;
 
+import Controller.PasswordHasher;
+import Controller.PasswordValidator;
 import Controller.SQLite;
+import CustomExceptions.PasswordException;
 import Model.User;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
 import javax.swing.JComboBox;
@@ -27,6 +31,8 @@ public class MgmtUser extends javax.swing.JPanel {
 
     public SQLite sqlite;
     public DefaultTableModel tableModel;
+    private final PasswordValidator validator = new PasswordValidator();
+    private final PasswordHasher hasher = new PasswordHasher();
     
     public MgmtUser(SQLite sqlite) {
         initComponents();
@@ -280,8 +286,8 @@ public class MgmtUser extends javax.swing.JPanel {
 
     private void chgpassBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chgpassBtnActionPerformed
         if(table.getSelectedRow() >= 0){
-            JTextField password = new JPasswordField();
-            JTextField confpass = new JPasswordField();
+            JPasswordField password = new JPasswordField();
+            JPasswordField confpass = new JPasswordField();
             designer(password, "PASSWORD");
             designer(confpass, "CONFIRM PASSWORD");
             
@@ -292,12 +298,57 @@ public class MgmtUser extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, message, "CHANGE PASSWORD", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
             
             if (result == JOptionPane.OK_OPTION) {
-                System.out.println(password.getText());
-                System.out.println(confpass.getText());
+                String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
+                String passText = new String(password.getPassword());
+                String confText = new String(confpass.getPassword());
+                
+                System.out.println(confpass.getPassword());
+                System.out.println(password.getPassword());
+                
+                if(!hasEmptyFields(passText, confText)){
+                    password.setText("");
+                    confpass.setText("");
+                    
+                    try {
+                        if(validator.isValidPassword(passText, confText)){
+                            
+                            String hashedPassword = validator.passwordPwndCheck(passText);
+                            String finalHashedPassword = hasher.hash(hashedPassword, "SHA-256");
+
+                            this.sqlite.changeUserPassword(username, finalHashedPassword);
+                            JOptionPane.showMessageDialog(this, String.format("User %s's password has been changed.", username), "Change Password Successful", JOptionPane.PLAIN_MESSAGE);
+                            this.logAction("CHANGE_PASS", username, String.format("[SUCCESS] Change password of user %s successful.", username));
+                            this.init();
+                        }
+                        
+                    } catch (PasswordException e){
+                        e.setHeader("Change Password Failed");
+                        JOptionPane.showMessageDialog(this, e.getMessage(), e.getHeader(), JOptionPane.ERROR_MESSAGE);  
+                        this.logAction("CHANGE_PASS", username, String.format("[FAIL] Input failure on user %s: %s", username, e.getMessage()));
+                        
+                    } catch(Exception e){
+                        System.out.println(e);
+                        JOptionPane.showMessageDialog(this, String.format("Attempt to change password of user %s has failed.", username), "Change Password Failed", JOptionPane.ERROR_MESSAGE);
+                        this.logAction("CHANGE_PASS", username, String.format("[FAIL] Change password of user %s failed.", username)); 
+                               
+                    }
+                    
+                } 
+                
+                
+                
             }
         }
     }//GEN-LAST:event_chgpassBtnActionPerformed
 
+    private boolean hasEmptyFields(String password, String confirmPassword){
+        if(password.isEmpty() || confirmPassword.isEmpty()){
+            JOptionPane.showMessageDialog(this, "Please complete the change password form.", "Change Password Failed", JOptionPane.ERROR_MESSAGE);
+            return true;
+        } 
+        return false;
+    }
+    
     
     private void logAction(String event, String username, String desc){
         

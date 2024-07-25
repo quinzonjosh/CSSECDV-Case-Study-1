@@ -124,7 +124,7 @@ public class Register extends javax.swing.JPanel {
                     String hashedPassword = validator.passwordPwndCheck(password);
                     String finalHashedPassword = passwordHasher.hash(hashedPassword, "SHA-256");
 
-                    frame.registerAction(usernameFld.getText(), finalHashedPassword, Arrays.toString(confpassFld.getPassword()));
+                    frame.registerAction(username, finalHashedPassword, Arrays.toString(confpassFld.getPassword()));
                     
                     JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
                     frame.logAction("NOTICE", username, "User creation Successful");

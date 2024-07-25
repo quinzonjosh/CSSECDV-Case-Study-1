@@ -95,7 +95,7 @@ public class Login extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     private void loginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginBtnActionPerformed
         String username = usernameFld.getText();
-        String password = Arrays.toString(passwordFld.getPassword());
+        String password = new String(passwordFld.getPassword());
         
         
         if(!hasEmptyFields(username, password)){
