@@ -9,7 +9,7 @@ import javax.swing.JOptionPane;
 public class Login extends javax.swing.JPanel {
 
     public Frame frame;
-    private final PasswordHasher passwordHasher = new PasswordHasher();
+    private final PasswordHasher hasher = new PasswordHasher();
     
     public Login() {
         initComponents();
@@ -128,7 +128,7 @@ public class Login extends javax.swing.JPanel {
 //    }
     
     private void checkCredentials(String username, String password) throws LoginException {
-        String hashedPassword = passwordHasher.hash(passwordHasher.hash(password, "SHA-1"), "SHA-256");
+        String hashedPassword = hasher.hash(hasher.hash(password, "SHA-1"), "SHA-256");
         if(!frame.attemptLoginSuccessful(username, hashedPassword))
             throw new LoginException();
     }

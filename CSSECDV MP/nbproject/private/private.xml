@@ -5,9 +5,10 @@
         <group>
             <file>file:/C:/Users/Cymon/Documents/GitHub/CSSECDV-Case-Study-1/CSSECDV%20MP/src/View/MgmtUser.java</file>
             <file>file:/C:/Users/Cymon/Documents/GitHub/CSSECDV-Case-Study-1/CSSECDV%20MP/src/Model/User.java</file>
-            <file>file:/C:/Users/Cymon/Documents/GitHub/CSSECDV-Case-Study-1/CSSECDV%20MP/src/View/Frame.java</file>
+            <file>file:/C:/Users/Cymon/Documents/GitHub/CSSECDV-Case-Study-1/CSSECDV%20MP/src/View/Register.java</file>
             <file>file:/C:/Users/Cymon/Documents/GitHub/CSSECDV-Case-Study-1/CSSECDV%20MP/src/Controller/SQLite.java</file>
-            <file>file:/C:/Users/Cymon/Documents/GitHub/CSSECDV-Case-Study-1/CSSECDV%20MP/src/Controller/Main.java</file>
+            <file>file:/C:/Users/Cymon/Documents/GitHub/CSSECDV-Case-Study-1/CSSECDV%20MP/src/View/MgmtLogs.java</file>
+            <file>file:/C:/Users/Cymon/Documents/GitHub/CSSECDV-Case-Study-1/CSSECDV%20MP/src/Controller/PasswordValidator.java</file>
         </group>
     </open-files>
 </project-private>

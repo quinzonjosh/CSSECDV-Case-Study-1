@@ -272,40 +272,7 @@ public class Frame extends javax.swing.JFrame {
     public void registerAction(String username, String password, String confpass){
         main.sqlite.addUser(username, password, 2);
     }
-    
-    public boolean isPasswordPwned(String hashedPassword){
-                
-        String prefix = hashedPassword.substring(0,5);
-        String suffix = hashedPassword.substring(5).toUpperCase();
-        
-        try {
-            URL url = new URL("https://api.pwnedpasswords.com/range/" + prefix);
-        
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            
-            BufferedReader input = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String inputLine;
-            
-            while((inputLine  = input.readLine()) != null){
-                if(inputLine.startsWith(suffix)){
-                    input.close();                    
-                    return true;
-                }
-            }
-            
-            input.close();
-            
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        return false;
-    }
-
-    
+   
     public boolean usernameExist(String username){
         if (main.sqlite.usernameExist(username)){
             this.logAction("ATTEMPT_USERNAME", username, String.format("[SUCCESS] Input username = %s verified.", username));
@@ -319,6 +286,7 @@ public class Frame extends javax.swing.JFrame {
     public boolean attemptLoginSuccessful(String username, String password){
         
         if (this.usernameExist(username)){
+            
             //check if username and password is correct
             if(!main.sqlite.isLoginSuccessful(username, password)){
 
