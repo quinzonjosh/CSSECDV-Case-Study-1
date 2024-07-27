@@ -398,6 +398,40 @@ public class SQLite {
         throw new Exception("No value found.");
     }
     
+    
+    private void removeLinkToSession(String id) throws Exception {
+        String sql = "DELETE FROM session_user_bridge WHERE session_id=(?)";
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        
+        pstmt.setString(1, id);
+            
+        pstmt.executeUpdate();
+        conn.close();
+        
+        System.out.println("Link to Session " + id + " has been deleted.");
+    }
+    
+    public void removeSession(String id) throws Exception {
+        
+        this.removeLinkToSession(id);
+        
+        String sql = "DELETE FROM sessions WHERE id=(?)";
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        
+        pstmt.setString(1, id);
+            
+        pstmt.executeUpdate();
+        conn.close();
+        
+        System.out.println("Session " + id + " has been deleted.");
+    }
+    
+    
+    
     public boolean usernameExist(String username){
         String sql = "SELECT username FROM users WHERE LOWER(username) = LOWER(?)";
         
@@ -509,52 +543,7 @@ public class SQLite {
         return false;
     }
     
-//    public boolean tryUnlock(String username){
-//        try (Connection conn = DriverManager.getConnection(driverURL)){
-//            
-//            String sql = "SELECT lockout_time FROM users WHERE username = ?";
-//            PreparedStatement pstmt = conn.prepareStatement(sql);
-//            pstmt.setString(1, username);
-//         
-//            
-//            ResultSet rs = pstmt.executeQuery();
-//            
-//            if(rs.next()){
-//                
-//                String retrievedDateString = rs.getString("lockout_time");
-//                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//                sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
-//                
-//                Date retrievedDate = sdf.parse(retrievedDateString);
-//                Date now = new Date();
-//
-//                //if date now is before timeout date, return false (failed attempt)
-//                if (now.before(retrievedDate))
-//                    return false;
-//  
-//                //else now is equal or after timout date, unlock user
-//                else {
-//                    
-////                  unlock user
-//                    sql = "UPDATE users SET locked = ?, lockout_time = ? WHERE username = ?";
-//                    pstmt = conn.prepareStatement(sql);
-//                    pstmt.setInt(1, 0);
-//                    pstmt.setNull(2, java.sql.Types.VARCHAR);
-//                    pstmt.setString(3, username);
-//                    
-//                    pstmt.executeUpdate();
-//              
-//                    return true;
-//                }
-//
-//            }
-//
-//        } catch (Exception ex) {
-//            System.out.print(ex);
-//        }
-//        
-//        return false;
-//    }
+
     
     public void lockUser(String username) throws Exception {
   
@@ -569,30 +558,6 @@ public class SQLite {
 
         pstmt.executeUpdate();
 
-        
-//        try (Connection conn = DriverManager.getConnection(driverURL)){
-//            
-//            String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = ? AND role != ?)";
-//            PreparedStatement pstmt = conn.prepareStatement(sql);
-//            pstmt.setString(1, username);
-//            pstmt.setInt(2, 0);
-//            pstmt.setInt(3, 1);
-//         
-//            ResultSet rs = pstmt.executeQuery();
-//            
-//            if(rs.next()){
-//                
-//                if(rs.getBoolean(1)){
-//                    
-//                    
-//                }
-//            }
-//            
-//           
-//
-//        } catch (Exception ex) {
-//            System.out.print(ex);
-//        }
     }
     
     public void unlockUser(String username) throws Exception {

@@ -5,6 +5,9 @@ import Controller.PasswordHasher;
 import Controller.SessionManager;
 import Model.Session;
 import java.awt.CardLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,12 +20,62 @@ import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.SecretKey;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
 public class Frame extends javax.swing.JFrame {
 
+    public Main main;
+    public Login loginPnl = new Login();
+    public Register registerPnl = new Register();
+    
+  
+    private AdminHome adminHomePnl = new AdminHome();
+    private ManagerHome managerHomePnl = new ManagerHome();
+    private StaffHome staffHomePnl = new StaffHome();
+    private ClientHome clientHomePnl = new ClientHome();
+    
+    private CardLayout contentView = new CardLayout();
+    private CardLayout frameView = new CardLayout();
+    
+    private static final int MAX_LOGIN = 5;
+    private String userSession = "";
+    
+    
+    
     public Frame() {
         initComponents();
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                int response = JOptionPane.showConfirmDialog(Frame.this, 
+                        "Are you sure you want to exit?", 
+                        "Confirm Exit", 
+                        JOptionPane.YES_NO_OPTION, 
+                        JOptionPane.QUESTION_MESSAGE);
+
+                if (response == JOptionPane.YES_OPTION) {
+                    
+                    if(!Frame.this.userSession.isBlank()){
+                        try {
+                            Frame.this.logOutProcedure();
+                            dispose(); // Close the frame
+                            System.exit(0); // Exit the program
+                        } catch(Exception ex){
+                            ex.printStackTrace();
+                            JOptionPane.showMessageDialog(Frame.this, "Connot logout right now. Please try again later or report to admin for details.", "Logout Unsuccessful", JOptionPane.ERROR_MESSAGE);
+                            Frame.this.logAction("LOG_OUT", "SESSIONID: " + Frame.this.userSession, String.format("[FAIL] Failure to logout out due to server error: %s.", ex));
+                        }
+                    }
+                    else {
+                        dispose(); // Close the frame
+                        System.exit(0); // Exit the program
+                    }
+                }
+                
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -225,29 +278,46 @@ public class Frame extends javax.swing.JFrame {
     }//GEN-LAST:event_clientBtnActionPerformed
 
     private void logoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutBtnActionPerformed
-        Container.removeAll();
-        this.init(main);
         
-        this.logAction("LOG_OUT", "current", "Current user logging out.");
-        frameView.show(Container, "loginPnl");
-    }//GEN-LAST:event_logoutBtnActionPerformed
+        try{
+           this.logOutProcedure();
+           this.logAction("LOG_OUT", "SESSIONID: " + this.userSession, String.format("[SUCCESS] Delinked and Deleted current session %s.", this.userSession));
 
-    public Main main;
-    public Login loginPnl = new Login();
-    public Register registerPnl = new Register();
-    
+           Container.removeAll();
+           this.init(main);
+           this.logAction("LOG_OUT", "SESSIONID: " + this.userSession, "[SUCCESS] Current user logging out.");
+           frameView.show(Container, "loginPnl");
+           
+        } catch (Exception e){
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Connot logout right now. Please try again later or report to admin for details.", "Logout Unsuccessful", JOptionPane.ERROR_MESSAGE);
+            this.logAction("LOG_OUT", "SESSIONID: " + this.userSession, String.format("[FAIL] Failure to logout out due to server error: %s.", e));
+        }
+        
   
-    private AdminHome adminHomePnl = new AdminHome();
-    private ManagerHome managerHomePnl = new ManagerHome();
-    private StaffHome staffHomePnl = new StaffHome();
-    private ClientHome clientHomePnl = new ClientHome();
+    }//GEN-LAST:event_logoutBtnActionPerformed
     
-    private CardLayout contentView = new CardLayout();
-    private CardLayout frameView = new CardLayout();
+
     
-    private static final int MAX_LOGIN = 5;
-    private String userSession = "";
     
+//    this.addWindowListener(new WindowAdapter() {
+//        @Override
+//         void windowClosing(WindowEvent e) {
+//            int response = JOptionPane.showConfirmDialog(this, 
+//                    "Are you sure you want to exit?", 
+//                    "Confirm Exit", 
+//                    JOptionPane.YES_NO_OPTION, 
+//                    JOptionPane.QUESTION_MESSAGE);
+//
+//            if (response == JOptionPane.YES_OPTION) {
+//                this.dispose(); // Close the frame
+//                System.exit(0); // Exit the program
+//            }
+//        }
+//    });
+
+    
+   
     
     public void init(Main controller){
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -299,12 +369,18 @@ public class Frame extends javax.swing.JFrame {
         frameView.show(Container, "registerPnl");
     }
     
+    private void logOutProcedure()throws Exception{
+         main.sqlite.removeSession(userSession);
+         this.userSession = "";
+    }
+    
     
     
     
     public void registerAction(String username, String password, String confpass) throws Exception {
         main.sqlite.addUser(username, password, 2);
         SessionManager.createKeyOnRegistration(main.sqlite, username, username);
+        this.logAction("SESSION_KEY", "SESSIONKEY", String.format("[SUCCESS] Session key for username = %s created.", username));
     }
    
     public boolean usernameExist(String username){
@@ -332,6 +408,7 @@ public class Frame extends javax.swing.JFrame {
         
         //create a session in sessions db (String session) that returns an ID
         String id = main.sqlite.addSession(username, encrypted, new PasswordHasher());
+        this.logAction("CREATE_SESSION", username, String.format("[SUCCESS] Session created (ID: %s).", id));
         
         //pass ID to all panels 
         this.userSession = id;

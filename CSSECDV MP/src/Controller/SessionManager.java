@@ -106,11 +106,7 @@ public class SessionManager {
         }
 
     }
-    
-    
-    
-    
-    
+      
     private static byte[] serializeObject(Object object) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(baos)){
@@ -131,33 +127,7 @@ public class SessionManager {
             return session;
         }
     }
-    
-    
-//    private static SealedObject encryptObject(String algorithm, Serializable object,
-//        SecretKey key, IvParameterSpec iv) throws NoSuchPaddingException,
-//        NoSuchAlgorithmException, InvalidAlgorithmParameterException, 
-//        InvalidKeyException, IOException, IllegalBlockSizeException {
-//
-//        Cipher cipher = Cipher.getInstance(algorithm);
-//        cipher.init(Cipher.ENCRYPT_MODE, key, iv);
-//        SealedObject sealedObject = new SealedObject(object, cipher);
-//        
-//        return sealedObject;
-//    }
-//    
-//    private static Serializable decryptObject(String algorithm, SealedObject sealedObject,
-//        SecretKey key, IvParameterSpec iv) throws NoSuchPaddingException,
-//        NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
-//        ClassNotFoundException, BadPaddingException, IllegalBlockSizeException,
-//        IOException {
-//
-//        Cipher cipher = Cipher.getInstance(algorithm);
-//        cipher.init(Cipher.DECRYPT_MODE, key, iv);
-//        Serializable unsealObject = (Serializable) sealedObject.getObject(cipher);
-//        
-//        return unsealObject;
-//    }
-    
+   
     
     public static void createKeyOnRegistration(SQLite database, String username, String password) throws Exception{
         
@@ -204,11 +174,5 @@ public class SessionManager {
         return secret;
 
     }
-    
-    
-    
-    
-    
 
-    
 }
