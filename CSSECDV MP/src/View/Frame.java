@@ -1,6 +1,9 @@
 package View;
 
 import Controller.Main;
+import Controller.PasswordHasher;
+import Controller.SessionManager;
+import Model.Session;
 import java.awt.CardLayout;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,6 +16,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.SecretKey;
 import javax.swing.WindowConstants;
 
 public class Frame extends javax.swing.JFrame {
@@ -226,7 +230,8 @@ public class Frame extends javax.swing.JFrame {
     private CardLayout frameView = new CardLayout();
     
     private static final int MAX_LOGIN = 5;
-    private static final int MAX_TIMEOUT = 15;
+    private String userSession = "";
+    
     
     public void init(Main controller){
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -269,8 +274,12 @@ public class Frame extends javax.swing.JFrame {
         frameView.show(Container, "registerPnl");
     }
     
-    public void registerAction(String username, String password, String confpass){
+    
+    
+    
+    public void registerAction(String username, String password, String confpass) throws Exception {
         main.sqlite.addUser(username, password, 2);
+        SessionManager.createKeyOnRegistration(main.sqlite, username, username);
     }
    
     public boolean usernameExist(String username){
@@ -281,6 +290,41 @@ public class Frame extends javax.swing.JFrame {
         
         this.logAction("ATTEMPT_USERNAME", username, String.format("[FAIL] Input username = %s does not exist.", username));
         return false;
+    }
+    
+    public void createUserSession(String username) throws Exception {
+        
+        //get role of user
+        int role = main.sqlite.getUserRole(username);
+       
+        //create a session instance
+        Session session = new Session(username, role);
+        
+
+        //encrypt session object to string
+        String encrypted = SessionManager.encrypt(main.sqlite, username, session);
+        System.out.println("Session:" + encrypted);
+        
+        //create a session in sessions db (String session) that returns an ID
+        String id = main.sqlite.addSession(username, encrypted, new PasswordHasher());
+        
+        //pass ID to all panels 
+        this.userSession = id;
+        
+        checkSession();
+    }
+    
+//    
+    private void checkSession() throws Exception {
+        //get session using id
+        String encrypted = main.sqlite.getSession(this.userSession);
+        
+        //decrypt using id and encrypted session
+        Session session = SessionManager.decrypt(main.sqlite, this.userSession, encrypted);
+        
+        System.out.println(String.format("Username: %s role = %d", session.getUsername(), session.getRole()));
+        
+               
     }
     
     public boolean attemptLoginSuccessful(String username, String password){
