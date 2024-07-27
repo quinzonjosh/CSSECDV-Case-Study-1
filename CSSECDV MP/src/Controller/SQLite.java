@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.TimeZone;
 
@@ -234,6 +235,8 @@ public class SQLite {
             System.out.print(ex);
         }
     }
+    
+   
     
     
     public void addSessionKeyToUser(String username, String key) throws Exception {
@@ -600,7 +603,23 @@ public class SQLite {
     }
     
     
-    
+    public HashMap<Integer, String> getAccessRoles() {
+        String sql = "SELECT code, access FROM access_roles";
+        HashMap<Integer, String> accessMatrix = new HashMap<>();
+        
+        try (Connection conn = DriverManager.getConnection(driverURL);
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql)){
+            
+            while (rs.next()) {
+                accessMatrix.put(rs.getInt("code"), rs.getString("access"));
+            }
+           
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        return accessMatrix;
+    }
     
     
     public ArrayList<History> getHistory(){

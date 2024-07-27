@@ -16,6 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,11 +42,13 @@ public class Frame extends javax.swing.JFrame {
     
     private static final int MAX_LOGIN = 5;
     private String userSession = "";
-    
+    private HashMap<Integer, String> accessMatrix;
     
     
     public Frame() {
         initComponents();
+        
+        
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -246,35 +249,102 @@ public class Frame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void adminBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adminBtnActionPerformed
-        Content.remove(adminHomePnl);
-        Content.add(adminHomePnl, "adminHomePnl");
+        try {
+            Session session = this.checkSession();
+            if(this.accessMatrix.get(session.getRole()).equals("Administrator")){
+                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Administrator"));
+                
+                Content.remove(adminHomePnl);
+                Content.add(adminHomePnl, "adminHomePnl");
+                adminHomePnl.showPnl("home");
+                contentView.show(Content, "adminHomePnl");
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "You do not have access to this page.", "Access Failure", JOptionPane.ERROR_MESSAGE);
+                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Administrator"));
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Server error. Please contact admin.", "Server Failure", JOptionPane.ERROR_MESSAGE);
+            this.logAction("CHECK_SESSION", "SESSIONID: " + this.userSession, String.format("[FAIL] server failure due to %s", e));
+        }
         
-        adminHomePnl.showPnl("home");
-        contentView.show(Content, "adminHomePnl");
+        
     }//GEN-LAST:event_adminBtnActionPerformed
 
     private void managerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managerBtnActionPerformed
        
-        Content.remove(managerHomePnl);
-        Content.add(managerHomePnl, "managerHomePnl");
-        managerHomePnl.showPnl("home");
-        contentView.show(Content, "managerHomePnl");
+        try {
+            Session session = this.checkSession();
+            if(this.accessMatrix.get(session.getRole()).equals("Manager")){
+                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Manager"));
+                
+                Content.remove(managerHomePnl);
+                Content.add(managerHomePnl, "managerHomePnl");
+                managerHomePnl.showPnl("home");
+                contentView.show(Content, "managerHomePnl");
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "You do not have access to this page.", "Access Failure", JOptionPane.ERROR_MESSAGE);
+                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Manager"));
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Server error. Please contact admin.", "Server Failure", JOptionPane.ERROR_MESSAGE);
+            this.logAction("CHECK_SESSION", "SESSIONID: " + this.userSession, String.format("[FAIL] server failure due to %s", e));
+        }
+        
+        
     }//GEN-LAST:event_managerBtnActionPerformed
 
     private void staffBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_staffBtnActionPerformed
-        Content.remove(staffHomePnl);
-        Content.add(staffHomePnl, "staffHomePnl");
         
-        staffHomePnl.showPnl("home");
-        contentView.show(Content, "staffHomePnl");
+        try {
+            Session session = this.checkSession();
+            if(this.accessMatrix.get(session.getRole()).equals("Staff")){
+                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Staff"));
+                
+                Content.remove(staffHomePnl);
+                Content.add(staffHomePnl, "staffHomePnl");
+                staffHomePnl.showPnl("home");
+                contentView.show(Content, "staffHomePnl");
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "You do not have access to this page.", "Access Failure", JOptionPane.ERROR_MESSAGE);
+                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Staff"));
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Server error. Please contact admin.", "Server Failure", JOptionPane.ERROR_MESSAGE);
+            this.logAction("CHECK_SESSION", "SESSIONID: " + this.userSession, String.format("[FAIL] server failure due to %s", e));
+        }
+        
+        
     }//GEN-LAST:event_staffBtnActionPerformed
 
     private void clientBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientBtnActionPerformed
-        Content.remove(clientHomePnl);
-        Content.add(clientHomePnl, "clientHomePnl");
         
-        clientHomePnl.showPnl("home");
-        contentView.show(Content, "clientHomePnl");
+        try {
+            Session session = this.checkSession();
+            if(this.accessMatrix.get(session.getRole()).equals("Client")){
+                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Client"));
+                
+                Content.remove(clientHomePnl);
+                Content.add(clientHomePnl, "clientHomePnl");
+                clientHomePnl.showPnl("home");
+                contentView.show(Content, "clientHomePnl");
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "You do not have access to this page.", "Access Failure", JOptionPane.ERROR_MESSAGE);
+                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Client"));
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Server error. Please contact admin.", "Server Failure", JOptionPane.ERROR_MESSAGE);
+            this.logAction("CHECK_SESSION", "SESSIONID: " + this.userSession, String.format("[FAIL] server failure due to %s", e));
+        }
+        
+        
     }//GEN-LAST:event_clientBtnActionPerformed
 
     private void logoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutBtnActionPerformed
@@ -290,37 +360,15 @@ public class Frame extends javax.swing.JFrame {
            
         } catch (Exception e){
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Connot logout right now. Please try again later or report to admin for details.", "Logout Unsuccessful", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Cannot logout right now. Please try again later or report to admin for details.", "Logout Unsuccessful", JOptionPane.ERROR_MESSAGE);
             this.logAction("LOG_OUT", "SESSIONID: " + this.userSession, String.format("[FAIL] Failure to logout out due to server error: %s.", e));
         }
         
   
     }//GEN-LAST:event_logoutBtnActionPerformed
     
-
-    
-    
-//    this.addWindowListener(new WindowAdapter() {
-//        @Override
-//         void windowClosing(WindowEvent e) {
-//            int response = JOptionPane.showConfirmDialog(this, 
-//                    "Are you sure you want to exit?", 
-//                    "Confirm Exit", 
-//                    JOptionPane.YES_NO_OPTION, 
-//                    JOptionPane.QUESTION_MESSAGE);
-//
-//            if (response == JOptionPane.YES_OPTION) {
-//                this.dispose(); // Close the frame
-//                System.exit(0); // Exit the program
-//            }
-//        }
-//    });
-
-    
-   
-    
     public void init(Main controller){
-        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+//        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setTitle("CSSECDV - SECURITY Svcs");
         this.setLocationRelativeTo(null);
         
@@ -354,6 +402,8 @@ public class Frame extends javax.swing.JFrame {
 //        Content.remove(clientHomePnl);
         Content.add(clientHomePnl, "clientHomePnl");
         
+        this.getAccessMatrix();
+        
         this.setVisible(true);
     }
     
@@ -375,6 +425,11 @@ public class Frame extends javax.swing.JFrame {
     }
     
     
+    private void getAccessMatrix(){
+       HashMap<Integer, String> matrix = main.sqlite.getAccessRoles();
+       this.accessMatrix = matrix;
+           
+    }
     
     
     public void registerAction(String username, String password, String confpass) throws Exception {
@@ -413,11 +468,11 @@ public class Frame extends javax.swing.JFrame {
         //pass ID to all panels 
         this.userSession = id;
         
-        checkSession();
+        Session sessionGarbage = checkSession();
     }
     
 //    
-    private void checkSession() throws Exception {
+    private Session checkSession() throws Exception {
         //get session using id
         String encrypted = main.sqlite.getSession(this.userSession);
         
@@ -425,7 +480,7 @@ public class Frame extends javax.swing.JFrame {
         Session session = SessionManager.decrypt(main.sqlite, this.userSession, encrypted);
         
         System.out.println(String.format("Username: %s role = %d", session.getUsername(), session.getRole()));
-        
+        return session;
                
     }
     
