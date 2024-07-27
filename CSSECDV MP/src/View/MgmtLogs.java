@@ -18,6 +18,7 @@ public class MgmtLogs extends javax.swing.JPanel {
 
     public SQLite sqlite;
     public DefaultTableModel tableModel;
+    private String session = "";
     
     public MgmtLogs(SQLite sqlite) {
         initComponents();
@@ -30,7 +31,9 @@ public class MgmtLogs extends javax.swing.JPanel {
 //        debugBtn.setVisible(false);
     }
 
-    public void init(){
+    public void init(String session){
+        this.session = session;
+        
         //      CLEAR TABLE
         for(int nCtr = tableModel.getRowCount(); nCtr > 0; nCtr--){
             tableModel.removeRow(0);

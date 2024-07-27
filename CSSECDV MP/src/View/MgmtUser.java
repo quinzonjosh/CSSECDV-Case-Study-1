@@ -33,6 +33,7 @@ public class MgmtUser extends javax.swing.JPanel {
     public DefaultTableModel tableModel;
     private final PasswordValidator validator = new PasswordValidator();
     private final PasswordHasher hasher = new PasswordHasher();
+    private String session = "";
     
     public MgmtUser(SQLite sqlite) {
         initComponents();
@@ -47,7 +48,9 @@ public class MgmtUser extends javax.swing.JPanel {
 //        chgpassBtn.setVisible(false);
     }
     
-    public void init(){
+    public void init(String session){
+        this.session = session;
+        
         //      CLEAR TABLE
         for(int nCtr = tableModel.getRowCount(); nCtr > 0; nCtr--){
             tableModel.removeRow(0);
@@ -213,7 +216,7 @@ public class MgmtUser extends javax.swing.JPanel {
                     this.sqlite.changeUserRole(username, role);
                     JOptionPane.showMessageDialog(this, String.format("User %s changed to role = %s", username, result), "Edit Role Successful", JOptionPane.INFORMATION_MESSAGE);
                     this.logAction("CHANGE_ROLE", username, String.format("[SUCCESS] Role of User %s changed to role = %c", username, role));
-                    this.init();  
+                    this.init(this.session);  
                 }
                 catch(Exception e){
                     System.out.println(e);
@@ -239,7 +242,7 @@ public class MgmtUser extends javax.swing.JPanel {
                     this.sqlite.removeUser(username);
                     JOptionPane.showMessageDialog(this, String.format("Attempt to delete user %s is successful.", username), "Delete User Successful", JOptionPane.PLAIN_MESSAGE);
                     this.logAction("REMOVE_USER", username, String.format("[SUCCESS] Successful on deleting user %s ", username));  
-                    this.init();
+                    this.init(this.session);
                     
                 } catch(Exception e){
                     System.out.println(e);
@@ -274,7 +277,7 @@ public class MgmtUser extends javax.swing.JPanel {
                         this.sqlite.lockUser(username);
                         JOptionPane.showMessageDialog(this, String.format("User %s has been locked.", username), "Locking Successful", JOptionPane.INFORMATION_MESSAGE);
                         this.logAction("CHANGE_TO_LOCK", username, String.format("[SUCCESS] Locking user %s successful", username));
-                        this.init();
+                        this.init(this.session);
                           
                     } catch (Exception e){
                         System.out.println(e);
@@ -287,7 +290,7 @@ public class MgmtUser extends javax.swing.JPanel {
                         this.sqlite.unlockUser(username);
                         JOptionPane.showMessageDialog(this, String.format("User %s has been unlocked.", username), "Unlocking Successful", JOptionPane.INFORMATION_MESSAGE);
                         this.logAction("CHANGE_TO_UNLOCK", username, String.format("[SUCCESS] Unlocking user %s successful", username));
-                        this.init();
+                        this.init(this.session);
                           
                     } catch (Exception e){
                         System.out.println(e);
@@ -335,7 +338,7 @@ public class MgmtUser extends javax.swing.JPanel {
                             this.sqlite.changeUserPassword(username, finalHashedPassword);
                             JOptionPane.showMessageDialog(this, String.format("User %s's password has been changed.", username), "Change Password Successful", JOptionPane.PLAIN_MESSAGE);
                             this.logAction("CHANGE_PASS", username, String.format("[SUCCESS] Change password of user %s successful.", username));
-                            this.init();
+                            this.init(this.session);
                         }
                         
                     } catch (PasswordException e){
