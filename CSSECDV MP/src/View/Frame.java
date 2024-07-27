@@ -254,6 +254,7 @@ public class Frame extends javax.swing.JFrame {
             if(this.accessMatrix.get(session.getRole()).equals("Administrator")){
                 this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Administrator"));
                 
+                adminHomePnl.passSession(userSession);
                 Content.remove(adminHomePnl);
                 Content.add(adminHomePnl, "adminHomePnl");
                 adminHomePnl.showPnl("home");
@@ -279,6 +280,7 @@ public class Frame extends javax.swing.JFrame {
             if(this.accessMatrix.get(session.getRole()).equals("Manager")){
                 this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Manager"));
                 
+                managerHomePnl.passSession(userSession);
                 Content.remove(managerHomePnl);
                 Content.add(managerHomePnl, "managerHomePnl");
                 managerHomePnl.showPnl("home");
@@ -304,6 +306,7 @@ public class Frame extends javax.swing.JFrame {
             if(this.accessMatrix.get(session.getRole()).equals("Staff")){
                 this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Staff"));
                 
+                staffHomePnl.passSession(userSession);
                 Content.remove(staffHomePnl);
                 Content.add(staffHomePnl, "staffHomePnl");
                 staffHomePnl.showPnl("home");
@@ -329,6 +332,7 @@ public class Frame extends javax.swing.JFrame {
             if(this.accessMatrix.get(session.getRole()).equals("Client")){
                 this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Client"));
                 
+                clientHomePnl.passSession(userSession);
                 Content.remove(clientHomePnl);
                 Content.add(clientHomePnl, "clientHomePnl");
                 clientHomePnl.showPnl("home");
