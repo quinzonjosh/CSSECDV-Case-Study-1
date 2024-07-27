@@ -250,7 +250,7 @@ public class Frame extends javax.swing.JFrame {
 
     private void adminBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adminBtnActionPerformed
         try {
-            Session session = this.checkSession();
+            Session session = SessionManager.checkSession(main.sqlite, this.userSession);
             if(this.accessMatrix.get(session.getRole()).equals("Administrator")){
                 this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Administrator"));
                 
@@ -275,7 +275,7 @@ public class Frame extends javax.swing.JFrame {
     private void managerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managerBtnActionPerformed
        
         try {
-            Session session = this.checkSession();
+            Session session = SessionManager.checkSession(main.sqlite, this.userSession);
             if(this.accessMatrix.get(session.getRole()).equals("Manager")){
                 this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Manager"));
                 
@@ -300,7 +300,7 @@ public class Frame extends javax.swing.JFrame {
     private void staffBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_staffBtnActionPerformed
         
         try {
-            Session session = this.checkSession();
+            Session session = SessionManager.checkSession(main.sqlite, this.userSession);
             if(this.accessMatrix.get(session.getRole()).equals("Staff")){
                 this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Staff"));
                 
@@ -325,7 +325,7 @@ public class Frame extends javax.swing.JFrame {
     private void clientBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientBtnActionPerformed
         
         try {
-            Session session = this.checkSession();
+            Session session = SessionManager.checkSession(main.sqlite, this.userSession);
             if(this.accessMatrix.get(session.getRole()).equals("Client")){
                 this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Client"));
                 
@@ -468,21 +468,11 @@ public class Frame extends javax.swing.JFrame {
         //pass ID to all panels 
         this.userSession = id;
         
-        Session sessionGarbage = checkSession();
+        
     }
     
 //    
-    private Session checkSession() throws Exception {
-        //get session using id
-        String encrypted = main.sqlite.getSession(this.userSession);
-        
-        //decrypt using id and encrypted session
-        Session session = SessionManager.decrypt(main.sqlite, this.userSession, encrypted);
-        
-        System.out.println(String.format("Username: %s role = %d", session.getUsername(), session.getRole()));
-        return session;
-               
-    }
+    
     
     public boolean attemptLoginSuccessful(String username, String password){
         

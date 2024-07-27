@@ -174,5 +174,17 @@ public class SessionManager {
         return secret;
 
     }
+    
+    public static Session checkSession(SQLite database, String id) throws Exception {
+        //get session using id
+        String encrypted = database.getSession(id);
+        
+        //decrypt using id and encrypted session
+        Session session = decrypt(database, id, encrypted);
+        
+        System.out.println(String.format("Username: %s role = %d", session.getUsername(), session.getRole()));
+        return session;
+               
+    }
 
 }
