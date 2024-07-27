@@ -193,26 +193,41 @@ public class Frame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void adminBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adminBtnActionPerformed
+        Content.remove(adminHomePnl);
+        Content.add(adminHomePnl, "adminHomePnl");
+        
         adminHomePnl.showPnl("home");
         contentView.show(Content, "adminHomePnl");
     }//GEN-LAST:event_adminBtnActionPerformed
 
     private void managerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managerBtnActionPerformed
+       
+        Content.remove(managerHomePnl);
+        Content.add(managerHomePnl, "managerHomePnl");
         managerHomePnl.showPnl("home");
         contentView.show(Content, "managerHomePnl");
     }//GEN-LAST:event_managerBtnActionPerformed
 
     private void staffBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_staffBtnActionPerformed
+        Content.remove(staffHomePnl);
+        Content.add(staffHomePnl, "staffHomePnl");
+        
         staffHomePnl.showPnl("home");
         contentView.show(Content, "staffHomePnl");
     }//GEN-LAST:event_staffBtnActionPerformed
 
     private void clientBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientBtnActionPerformed
+        Content.remove(clientHomePnl);
+        Content.add(clientHomePnl, "clientHomePnl");
+        
         clientHomePnl.showPnl("home");
         contentView.show(Content, "clientHomePnl");
     }//GEN-LAST:event_clientBtnActionPerformed
 
     private void logoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutBtnActionPerformed
+        Container.removeAll();
+        this.init(main);
+        
         this.logAction("LOG_OUT", "current", "Current user logging out.");
         frameView.show(Container, "loginPnl");
     }//GEN-LAST:event_logoutBtnActionPerformed
@@ -221,6 +236,7 @@ public class Frame extends javax.swing.JFrame {
     public Login loginPnl = new Login();
     public Register registerPnl = new Register();
     
+  
     private AdminHome adminHomePnl = new AdminHome();
     private ManagerHome managerHomePnl = new ManagerHome();
     private StaffHome staffHomePnl = new StaffHome();
@@ -254,9 +270,18 @@ public class Frame extends javax.swing.JFrame {
         frameView.show(Container, "loginPnl");
         
         Content.setLayout(contentView);
+        Content.add(new Home("WELCOME USER!", new java.awt.Color(255, 255, 255)), "home");
+        
+//        Content.remove(adminHomePnl);
         Content.add(adminHomePnl, "adminHomePnl");
+        
+//        Content.remove(managerHomePnl);
         Content.add(managerHomePnl, "managerHomePnl");
+        
+//        Content.remove(staffHomePnl);
         Content.add(staffHomePnl, "staffHomePnl");
+        
+//        Content.remove(clientHomePnl);
         Content.add(clientHomePnl, "clientHomePnl");
         
         this.setVisible(true);
