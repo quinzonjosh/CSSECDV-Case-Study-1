@@ -113,6 +113,9 @@ public class Login extends javax.swing.JPanel {
                 //check if password is correct
                 checkCredentials(username, password);
                 
+                //create session upon successful login
+                createSession(username);
+                
                 JOptionPane.showMessageDialog(this, "User successfully logged in", "Login Successful", JOptionPane.INFORMATION_MESSAGE);
                 frame.mainNav();
                 
@@ -122,6 +125,21 @@ public class Login extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_loginBtnActionPerformed
 
+    
+    private void createSession(String username) throws AttemptException{
+        
+       try {
+           frame.createUserSession(username);
+           
+                   
+       } catch(Exception e){
+           e.printStackTrace();
+           throw new AttemptException();
+       }
+     
+        
+    }
+    
     private void checkUsername(String username) throws LoginException {
         if(!frame.usernameExist(username))
             throw new LoginException();

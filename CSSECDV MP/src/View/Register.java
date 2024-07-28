@@ -125,6 +125,7 @@ public class Register extends javax.swing.JPanel {
                     String finalHashedPassword = passwordHasher.hash(hashedPassword, "SHA-256");
 
                     frame.registerAction(username, finalHashedPassword, Arrays.toString(confpassFld.getPassword()));
+                   
                     
                     JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
                     frame.logAction("NOTICE", username, "User creation Successful");
@@ -138,8 +139,10 @@ public class Register extends javax.swing.JPanel {
             e.setHeader("Registration Failed");
             JOptionPane.showMessageDialog(this, e.getMessage(), e.getHeader(), JOptionPane.ERROR_MESSAGE);
             
+        } catch(Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Server Error. Please try again later.", "Registration Failed", JOptionPane.ERROR_MESSAGE);   
         }
-        
     }//GEN-LAST:event_registerBtnActionPerformed
     
     private boolean hasEmptyFields(String username, String password, String confirmPassword){

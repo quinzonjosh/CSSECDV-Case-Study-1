@@ -9,6 +9,7 @@ import View.Frame;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import javax.swing.JFrame;
 
 
 
@@ -103,6 +104,7 @@ public class Main {
         // Initialize User Interface
         Frame frame = new Frame();
         frame.init(this);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     }
     
 }
