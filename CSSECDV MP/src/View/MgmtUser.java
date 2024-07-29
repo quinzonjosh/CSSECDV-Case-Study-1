@@ -307,7 +307,7 @@ public class MgmtUser extends javax.swing.JPanel {
                 state = "unlock";
             }
            
-            int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to " + state + " " + tableModel.getValueAt(table.getSelectedRow(), 0) + "?", "DELETE USER", JOptionPane.YES_NO_OPTION);
+            int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to " + state + " " + tableModel.getValueAt(table.getSelectedRow(), 0) + "?", String.format("%s USER", state.toUpperCase()), JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
                 
                 if(this.verifyUser()){
