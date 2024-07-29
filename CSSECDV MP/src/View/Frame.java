@@ -463,7 +463,6 @@ public class Frame extends javax.swing.JFrame {
 
         //encrypt session object to string
         String encrypted = SessionManager.encrypt(main.sqlite, username, session);
-        System.out.println("Session:" + encrypted);
         
         //create a session in sessions db (String session) that returns an ID
         String id = main.sqlite.addSession(username, encrypted, new PasswordHasher());

@@ -412,8 +412,6 @@ public class SQLite {
             
         pstmt.executeUpdate();
         conn.close();
-        
-        System.out.println("Link to Session " + id + " has been deleted.");
     }
     
     public void removeSession(String id) throws Exception {
@@ -430,7 +428,6 @@ public class SQLite {
         pstmt.executeUpdate();
         conn.close();
         
-        System.out.println("Session " + id + " has been deleted.");
     }
     
     

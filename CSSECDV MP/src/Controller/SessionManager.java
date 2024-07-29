@@ -59,7 +59,6 @@ public class SessionManager {
             // Serialize the object to a byte array
             byte[] serializedObject = serializeObject(object);
             
-            System.out.println(serializedObject.length);
             
             //get session key of user
             SecretKey key = getKeyUsingName(database, username);
@@ -138,8 +137,6 @@ public class SessionManager {
         SecretKey key = getKeyFromPassword(password, salt);
         String keyString = Base64.getEncoder().encodeToString(key.getEncoded());
         
-        System.out.println(key);
-        System.out.println(keyString);
         
         database.addSessionKeyToUser(username, keyString);
 
@@ -149,8 +146,6 @@ public class SessionManager {
     private static SecretKey getKeyUsingName(SQLite database, String username) throws Exception{
         
         String key = database.getSessionKeyUsingName(username);
-        
-        System.out.println(key);
         
         
         byte[] keyBytes = Base64.getDecoder().decode(key);
@@ -165,7 +160,6 @@ public class SessionManager {
     private static SecretKey getKeyUsingID(SQLite database, String id) throws Exception {
         String key = database.getSessionKeyUsingID(id);
         
-        System.out.println(key);
         
         byte[] keyBytes = Base64.getDecoder().decode(key);
         SecretKey secret = new SecretKeySpec(keyBytes, "AES");
@@ -181,8 +175,7 @@ public class SessionManager {
         
         //decrypt using id and encrypted session
         Session session = decrypt(database, id, encrypted);
-        
-        System.out.println(String.format("Username: %s role = %d", session.getUsername(), session.getRole()));
+
         return session;
                
     }
