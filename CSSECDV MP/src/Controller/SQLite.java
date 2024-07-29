@@ -236,9 +236,6 @@ public class SQLite {
         }
     }
     
-   
-    
-    
     public void addSessionKeyToUser(String username, String key) throws Exception {
         Connection conn = DriverManager.getConnection(driverURL);
         String sql = "UPDATE users SET session_key = ? WHERE username = ?";
@@ -252,7 +249,6 @@ public class SQLite {
         conn.close();
         
     }
-    
     
     public String getSessionKeyUsingName(String username) throws Exception {
         
@@ -299,9 +295,6 @@ public class SQLite {
     
     }
     
-    
-    
-    
     public int getUserRole(String username) throws Exception {
         Connection conn = DriverManager.getConnection(driverURL);
         
@@ -346,7 +339,6 @@ public class SQLite {
         
         return id;
     }
-    
     
     private int getUserID(String username) throws Exception {
         Connection conn = DriverManager.getConnection(driverURL);
@@ -401,7 +393,6 @@ public class SQLite {
         throw new Exception("No value found.");
     }
     
-    
     private void removeLinkToSession(String id) throws Exception {
         String sql = "DELETE FROM session_user_bridge WHERE session_id=(?)";
         
@@ -429,8 +420,6 @@ public class SQLite {
         conn.close();
         
     }
-    
-    
     
     public boolean usernameExist(String username){
         String sql = "SELECT username FROM users WHERE LOWER(username) = LOWER(?)";
@@ -543,8 +532,6 @@ public class SQLite {
         return false;
     }
     
-
-    
     public void lockUser(String username) throws Exception {
   
         Connection conn = DriverManager.getConnection(driverURL);
@@ -571,9 +558,6 @@ public class SQLite {
         pstmt.executeUpdate();
     }
     
-    
-    
-    
     public void changeUserRole(String username, char role) throws Exception {
         
         Connection conn = DriverManager.getConnection(driverURL);
@@ -587,7 +571,6 @@ public class SQLite {
         
     }
     
-    
     public void changeUserPassword(String username, String password) throws Exception{
         Connection conn = DriverManager.getConnection(driverURL);
         String sql = "UPDATE users SET password = ? WHERE username = ?";
@@ -598,7 +581,6 @@ public class SQLite {
 
         pstmt.executeUpdate();
     }
-    
     
     public HashMap<Integer, String> getAccessRoles() {
         String sql = "SELECT code, access FROM access_roles";
@@ -617,7 +599,6 @@ public class SQLite {
         }
         return accessMatrix;
     }
-    
     
     public ArrayList<History> getHistory(){
         String sql = "SELECT id, username, name, stock, timestamp FROM history";
@@ -773,5 +754,21 @@ public class SQLite {
         
         
         return product;
+    }
+
+    public void updateProductStock(String productName, int purchasedAmt){
+        String sql = "UPDATE product SET stock = stock - ? WHERE name = ?";
+
+        try (Connection conn = DriverManager.getConnection(driverURL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            pstmt.setInt(1, purchasedAmt);
+            pstmt.setString(2, productName);
+            pstmt.executeUpdate();
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+
     }
 }

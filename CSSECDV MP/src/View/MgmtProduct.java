@@ -6,8 +6,15 @@
 package View;
 
 import Controller.SQLite;
+import Controller.SessionManager;
 import Model.Product;
+import Model.Session;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -189,10 +196,32 @@ public class MgmtProduct extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, message, "PURCHASE PRODUCT", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
             if (result == JOptionPane.OK_OPTION) {
-                System.out.println(stockFld.getText());
+                // implement stock input validation 
+                
+//                System.out.println(stockFld.getText());
+
+                try {
+                    Session current = SessionManager.checkSession(this.sqlite, this.session);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                    LocalDateTime now = LocalDateTime.now();
+                    String formattedNow = now.format(formatter);
+
+                    sqlite.addHistory(current.getUsername(),
+                            tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                            Integer.parseInt(stockFld.getText()),
+                            formattedNow);
+
+                    sqlite.updateProductStock(tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                            Integer.parseInt(stockFld.getText()));
+
+                } catch (Exception ex) {
+                    Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
             }
         }
     }//GEN-LAST:event_purchaseBtnActionPerformed
+
 
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
         JTextField nameFld = new JTextField();
