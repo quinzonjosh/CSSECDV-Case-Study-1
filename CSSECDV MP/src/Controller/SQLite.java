@@ -640,6 +640,30 @@ public class SQLite {
         return histories;
     }
     
+    public ArrayList<History> getHistory(String username){
+        String sql = "SELECT id, username, name, stock, timestamp FROM history"
+                + " WHERE username = LOWER(?)";
+        ArrayList<History> histories = new ArrayList<History>();
+        
+        try (Connection conn = DriverManager.getConnection(driverURL);
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+            
+            pstmt.setString(1, username);
+            
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                histories.add(new History(rs.getInt("id"),
+                                   rs.getString("username"),
+                                   rs.getString("name"),
+                                   rs.getInt("stock"),
+                                   rs.getString("timestamp")));
+            }
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        return histories;
+    }
+    
     public ArrayList<Logs> getLogs(){
         String sql = "SELECT id, event, username, desc, timestamp FROM logs";
         ArrayList<Logs> logs = new ArrayList<Logs>();
@@ -729,17 +753,25 @@ public class SQLite {
     }
     
     public Product getProduct(String name){
-        String sql = "SELECT name, stock, price FROM product WHERE name='" + name + "';";
+        String sql = "SELECT name, stock, price FROM product WHERE name=?;";
+        
         Product product = null;
         try (Connection conn = DriverManager.getConnection(driverURL);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)){
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ){
+            
+            pstmt.setString(1, name);
+            
+            ResultSet rs = pstmt.executeQuery();
             product = new Product(rs.getString("name"),
                                    rs.getInt("stock"),
                                    rs.getFloat("price"));
         } catch (Exception ex) {
             System.out.print(ex);
         }
+        
+        
+        
         return product;
     }
 }

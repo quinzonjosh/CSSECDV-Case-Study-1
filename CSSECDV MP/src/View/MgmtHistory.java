@@ -6,9 +6,13 @@
 package View;
 
 import Controller.SQLite;
+import Controller.SessionManager;
 import Model.History;
 import Model.Product;
+import Model.Session;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
@@ -43,24 +47,31 @@ public class MgmtHistory extends javax.swing.JPanel {
     public void init(String session){
         this.session = session;
         
-//      CLEAR TABLE
-        for(int nCtr = tableModel.getRowCount(); nCtr > 0; nCtr--){
-            tableModel.removeRow(0);
+        try {
+            Session current = SessionManager.checkSession(this.sqlite, this.session);
+    //      CLEAR TABLE
+            for(int nCtr = tableModel.getRowCount(); nCtr > 0; nCtr--){
+                tableModel.removeRow(0);
+            }
+            
+    //      LOAD CONTENTS
+            ArrayList<History> history = sqlite.getHistory(current.getUsername());
+            for(int nCtr = 0; nCtr < history.size(); nCtr++){
+                
+                Product product = sqlite.getProduct(history.get(nCtr).getName());
+                tableModel.addRow(new Object[]{
+                    history.get(nCtr).getUsername(), 
+                    history.get(nCtr).getName(), 
+                    history.get(nCtr).getStock(), 
+                    product.getPrice(), 
+                    product.getPrice() * history.get(nCtr).getStock(), 
+                    history.get(nCtr).getTimestamp()
+                });
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-//      LOAD CONTENTS
-        ArrayList<History> history = sqlite.getHistory();
-        for(int nCtr = 0; nCtr < history.size(); nCtr++){
-            Product product = sqlite.getProduct(history.get(nCtr).getName());
-            tableModel.addRow(new Object[]{
-                history.get(nCtr).getUsername(), 
-                history.get(nCtr).getName(), 
-                history.get(nCtr).getStock(), 
-                product.getPrice(), 
-                product.getPrice() * history.get(nCtr).getStock(), 
-                history.get(nCtr).getTimestamp()
-            });
-        }
     }
     
     public void designer(JTextField component, String text){
