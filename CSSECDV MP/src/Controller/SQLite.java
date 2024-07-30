@@ -798,8 +798,8 @@ public class SQLite {
              PreparedStatement pstmt = conn.prepareStatement(sql)){
             pstmt.setString(1, newProductName);
             pstmt.setInt(2, stock);
-            pstmt.setFloat(4, price);
-            pstmt.setString(2, oldProductName);
+            pstmt.setFloat(3, price);
+            pstmt.setString(4, oldProductName);
             pstmt.executeUpdate();
 
         } catch (Exception ex) {
