@@ -123,7 +123,22 @@ public class SQLite {
             System.out.print(ex);
         }
     }
-    
+
+    public void deleteProduct(String productName){
+        String sql = "DELETE FROM product WHERE name = ?";
+
+        try (Connection conn = DriverManager.getConnection(driverURL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            pstmt.setString(1, productName);
+            pstmt.executeUpdate();
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+
+    };
+
     public void dropHistoryTable() {
         String sql = "DROP TABLE IF EXISTS history;";
 

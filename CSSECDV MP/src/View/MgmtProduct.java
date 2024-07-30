@@ -304,7 +304,23 @@ public class MgmtProduct extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete " + tableModel.getValueAt(table.getSelectedRow(), 0) + "?", "DELETE PRODUCT", JOptionPane.YES_NO_OPTION);
             
             if (result == JOptionPane.YES_OPTION) {
-                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
+//                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
+                try {
+                    Session current = SessionManager.checkSession(this.sqlite, this.session);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                    LocalDateTime now = LocalDateTime.now();
+                    String dateTimeNow = now.format(formatter);
+
+                    sqlite.deleteProduct(tableModel.getValueAt(table.getSelectedRow(), 0).toString());
+                    sqlite.addLogs("DELETE_PRODUCT", current.getUsername(),
+                            "Deleted Product: " + tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                            dateTimeNow);
+
+                    loadProducts();
+                } catch (Exception ex) {
+                    Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
             }
         }
     }//GEN-LAST:event_deleteBtnActionPerformed
