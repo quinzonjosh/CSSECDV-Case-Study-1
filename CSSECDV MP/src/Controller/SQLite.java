@@ -765,9 +765,7 @@ public class SQLite {
         } catch (Exception ex) {
             System.out.print(ex);
         }
-        
-        
-        
+
         return product;
     }
 

@@ -200,30 +200,39 @@ public class MgmtProduct extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, message, "PURCHASE PRODUCT", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
             if (result == JOptionPane.OK_OPTION) {
-                // implement stock input validation 
-
                 try {
                     Session current = SessionManager.checkSession(this.sqlite, this.session);
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
                     LocalDateTime now = LocalDateTime.now();
                     String dateTimeNow = now.format(formatter);
+                    Product product = sqlite.getProduct(tableModel.getValueAt(table.getSelectedRow(), 0).toString());
 
-                    sqlite.addHistory(current.getUsername(),
-                            tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
-                            Integer.parseInt(stockFld.getText()),
-                            dateTimeNow);
+                    if(Integer.parseInt(stockFld.getText()) <= 0) {
+                        JOptionPane.showMessageDialog(null, "Please enter a positive number.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                    } else if(Integer.parseInt(stockFld.getText()) > product.getStock()){
+                        JOptionPane.showMessageDialog(null, "The amount you entered exceeds the available stock.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        sqlite.addHistory(current.getUsername(),
+                                tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                                Integer.parseInt(stockFld.getText()),
+                                dateTimeNow);
 
-                    sqlite.updateProduct(tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
-                            Integer.parseInt(stockFld.getText()));
+                        sqlite.updateProduct(tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                                Integer.parseInt(stockFld.getText()));
 
-                    sqlite.addLogs("PURCHASE", current.getUsername(),
-                            "User purchased " + tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
-                            dateTimeNow);
+                        sqlite.addLogs("PURCHASE", current.getUsername(),
+                                "User purchased " + tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                                dateTimeNow);
 
+                        JOptionPane.showMessageDialog(null, "Purchase successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    }
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Please enter a valid number.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {
                     Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+
             }
         }
     }//GEN-LAST:event_purchaseBtnActionPerformed
