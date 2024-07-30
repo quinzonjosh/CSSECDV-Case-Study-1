@@ -25,8 +25,7 @@ public class ClientHome extends javax.swing.JPanel {
     public MgmtLogs mgmtLogs;
     public MgmtProduct mgmtProduct;
     public MgmtUser mgmtUser;
-    
-    
+
     private String session = "";
     
     private CardLayout contentView = new CardLayout();

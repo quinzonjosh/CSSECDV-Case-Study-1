@@ -204,15 +204,19 @@ public class MgmtProduct extends javax.swing.JPanel {
                     Session current = SessionManager.checkSession(this.sqlite, this.session);
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
                     LocalDateTime now = LocalDateTime.now();
-                    String formattedNow = now.format(formatter);
+                    String dateTimeNow = now.format(formatter);
 
                     sqlite.addHistory(current.getUsername(),
                             tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
                             Integer.parseInt(stockFld.getText()),
-                            formattedNow);
+                            dateTimeNow);
 
                     sqlite.updateProductStock(tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
                             Integer.parseInt(stockFld.getText()));
+
+                    sqlite.addLogs("PURCHASE", current.getUsername(),
+                            "User purchased " + tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                            dateTimeNow);
 
                 } catch (Exception ex) {
                     Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
