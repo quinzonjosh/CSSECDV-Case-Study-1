@@ -47,18 +47,22 @@ public class MgmtProduct extends javax.swing.JPanel {
         
         this.session = session;
         
-        //      CLEAR TABLE
+        loadProducts();
+    }
+
+    private void loadProducts(){
+//        CLEAR TABLE
         for(int nCtr = tableModel.getRowCount(); nCtr > 0; nCtr--){
             tableModel.removeRow(0);
         }
-        
+
 //      LOAD CONTENTS
         ArrayList<Product> products = sqlite.getProduct();
         for(int nCtr = 0; nCtr < products.size(); nCtr++){
             tableModel.addRow(new Object[]{
-                products.get(nCtr).getName(), 
-                products.get(nCtr).getStock(), 
-                products.get(nCtr).getPrice()});
+                    products.get(nCtr).getName(),
+                    products.get(nCtr).getStock(),
+                    products.get(nCtr).getPrice()});
         }
     }
     
@@ -211,7 +215,7 @@ public class MgmtProduct extends javax.swing.JPanel {
                             Integer.parseInt(stockFld.getText()),
                             dateTimeNow);
 
-                    sqlite.updateProductStock(tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                    sqlite.updateProduct(tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
                             Integer.parseInt(stockFld.getText()));
 
                     sqlite.addLogs("PURCHASE", current.getUsername(),
@@ -225,7 +229,6 @@ public class MgmtProduct extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_purchaseBtnActionPerformed
-
 
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
         JTextField nameFld = new JTextField();
@@ -243,9 +246,23 @@ public class MgmtProduct extends javax.swing.JPanel {
         int result = JOptionPane.showConfirmDialog(null, message, "ADD PRODUCT", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
         if (result == JOptionPane.OK_OPTION) {
-            System.out.println(nameFld.getText());
-            System.out.println(stockFld.getText());
-            System.out.println(priceFld.getText());
+//            System.out.println(nameFld.getText());
+//            System.out.println(stockFld.getText());
+//            System.out.println(priceFld.getText());
+
+            try {
+                Session current = SessionManager.checkSession(this.sqlite, this.session);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                LocalDateTime now = LocalDateTime.now();
+                String dateTimeNow = now.format(formatter);
+
+                sqlite.addProduct(nameFld.getText(), Integer.parseInt(stockFld.getText()), Float.parseFloat(priceFld.getText()));
+                sqlite.addLogs("ADD_PRODUCT", current.getUsername(), "Added new product: " + nameFld.getText(), dateTimeNow);
+
+                loadProducts();
+            } catch (Exception ex) {
+                Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_addBtnActionPerformed
 
@@ -266,9 +283,18 @@ public class MgmtProduct extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, message, "EDIT PRODUCT", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
             if (result == JOptionPane.OK_OPTION) {
-                System.out.println(nameFld.getText());
-                System.out.println(stockFld.getText());
-                System.out.println(priceFld.getText());
+                try {
+                    Session current = SessionManager.checkSession(this.sqlite, this.session);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                    LocalDateTime now = LocalDateTime.now();
+                    String dateTimeNow = now.format(formatter);
+
+//                    sqlite.updateProduct(nameFld.getText(), Integer.parseInt(stockFld.getText()), Float.parseFloat(priceFld.getText()));
+//
+//                    sqlite.addLogs("EDIT_PRODUCT", current.getUsername(), "Edited product: " + nameFld.getText(), dateTimeNow);
+                } catch (Exception ex) {
+                    Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }//GEN-LAST:event_editBtnActionPerformed

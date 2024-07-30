@@ -756,7 +756,7 @@ public class SQLite {
         return product;
     }
 
-    public void updateProductStock(String productName, int purchasedAmt){
+    public void updateProduct(String productName, int purchasedAmt){
         String sql = "UPDATE product SET stock = stock - ? WHERE name = ?";
 
         try (Connection conn = DriverManager.getConnection(driverURL);
@@ -771,4 +771,11 @@ public class SQLite {
         }
 
     }
+
+    public void updateProduct(String name, int stock, float price){
+        String sql = "UPDATE product SET name = ?  WHERE name = ?";
+
+
+    }
+
 }
