@@ -201,8 +201,6 @@ public class MgmtProduct extends javax.swing.JPanel {
 
             if (result == JOptionPane.OK_OPTION) {
                 // implement stock input validation 
-                
-//                System.out.println(stockFld.getText());
 
                 try {
                     Session current = SessionManager.checkSession(this.sqlite, this.session);
@@ -246,10 +244,6 @@ public class MgmtProduct extends javax.swing.JPanel {
         int result = JOptionPane.showConfirmDialog(null, message, "ADD PRODUCT", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
         if (result == JOptionPane.OK_OPTION) {
-//            System.out.println(nameFld.getText());
-//            System.out.println(stockFld.getText());
-//            System.out.println(priceFld.getText());
-
             try {
                 Session current = SessionManager.checkSession(this.sqlite, this.session);
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
@@ -272,6 +266,8 @@ public class MgmtProduct extends javax.swing.JPanel {
             JTextField stockFld = new JTextField(tableModel.getValueAt(table.getSelectedRow(), 1) + "");
             JTextField priceFld = new JTextField(tableModel.getValueAt(table.getSelectedRow(), 2) + "");
 
+            String oldProductName = nameFld.getText();
+
             designer(nameFld, "PRODUCT NAME");
             designer(stockFld, "PRODUCT STOCK");
             designer(priceFld, "PRODUCT PRICE");
@@ -283,15 +279,17 @@ public class MgmtProduct extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, message, "EDIT PRODUCT", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
             if (result == JOptionPane.OK_OPTION) {
+
                 try {
                     Session current = SessionManager.checkSession(this.sqlite, this.session);
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
                     LocalDateTime now = LocalDateTime.now();
                     String dateTimeNow = now.format(formatter);
 
-//                    sqlite.updateProduct(nameFld.getText(), Integer.parseInt(stockFld.getText()), Float.parseFloat(priceFld.getText()));
-//
-//                    sqlite.addLogs("EDIT_PRODUCT", current.getUsername(), "Edited product: " + nameFld.getText(), dateTimeNow);
+                    sqlite.updateProduct(oldProductName, nameFld.getText(), Integer.parseInt(stockFld.getText()), Float.parseFloat(priceFld.getText()));
+                    sqlite.addLogs("EDIT_PRODUCT", current.getUsername(), "Edited product: " + nameFld.getText(), dateTimeNow);
+
+                    loadProducts();
                 } catch (Exception ex) {
                     Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -320,7 +318,6 @@ public class MgmtProduct extends javax.swing.JPanel {
                 } catch (Exception ex) {
                     Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
             }
         }
     }//GEN-LAST:event_deleteBtnActionPerformed

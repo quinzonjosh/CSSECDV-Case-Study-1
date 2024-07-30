@@ -787,10 +787,24 @@ public class SQLite {
 
     }
 
-    public void updateProduct(String name, int stock, float price){
-        String sql = "UPDATE product SET name = ?  WHERE name = ?";
+    public void updateProduct(String oldProductName, String newProductName, int stock, float price){
+        String sql = "UPDATE product " +
+                        "SET name = ?, " +
+                            "stock = ?, " +
+                            "price = ? " +
+                        "WHERE name = ?";
 
+        try (Connection conn = DriverManager.getConnection(driverURL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1, newProductName);
+            pstmt.setInt(2, stock);
+            pstmt.setFloat(3, price);
+            pstmt.setString(4, oldProductName);
+            pstmt.executeUpdate();
 
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
     }
 
 }
