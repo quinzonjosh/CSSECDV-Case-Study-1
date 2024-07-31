@@ -681,7 +681,7 @@ public class SQLite {
         return logs;
     }
     
-    public ArrayList<Product> getProduct(){
+    public ArrayList<Product> getProducts(){
         String sql = "SELECT id, name, stock, price FROM product";
         ArrayList<Product> products = new ArrayList<Product>();
         
