@@ -259,26 +259,8 @@ public class MgmtProduct extends javax.swing.JPanel {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
                 LocalDateTime now = LocalDateTime.now();
                 String dateTimeNow = now.format(formatter);
-                int STOCK_LIMIT = 10_000;
-                double PRICE_LIMIT = 10000.00;
-                int PRODUCT_NAME_MAX_LENGTH = 255;
-                ArrayList<Product> products = sqlite.getProducts();
 
-                if (nameFld.getText().isEmpty() || stockFld.getText().isEmpty() || priceFld.getText().isEmpty()){
-                    JOptionPane.showMessageDialog(null, "Please complete the add product form", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                } else if (Integer.parseInt(stockFld.getText()) < 0 || Float.parseFloat(priceFld.getText()) < 0){
-                    JOptionPane.showMessageDialog(null, "Stock and price must be non-negative", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                } else if (Integer.parseInt(stockFld.getText()) > STOCK_LIMIT || Double.parseDouble(priceFld.getText()) > PRICE_LIMIT){
-                    JOptionPane.showMessageDialog(null, "Stock/price exceeds the limit.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                } else if (nameFld.getText().length() > PRODUCT_NAME_MAX_LENGTH){
-                    JOptionPane.showMessageDialog(null, "Product name too long.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                } else if (!nameFld.getText().matches("^[a-zA-Z0-9\\\\s\\\\-\\\\._,\\\\'/&\\\\(\\\\)\\\\+:\\\\!\\\\?#]+$")){
-                    JOptionPane.showMessageDialog(null, "Invalid product name", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                } else if(productNameExists(products, nameFld.getText())) {
-                    JOptionPane.showMessageDialog(null, "Product already exist.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                } else if (!priceFld.getText().matches("^\\d+(\\.\\d{1,2})?$")) {
-                    JOptionPane.showMessageDialog(null, "Price must be a valid number with up to 2 decimal places.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                } else {
+                if(isProductValid(nameFld.getText(), stockFld.getText(), priceFld.getText())){
                     sqlite.addProduct(nameFld.getText(), Integer.parseInt(stockFld.getText()), Float.parseFloat(priceFld.getText()));
                     sqlite.addLogs("ADD_PRODUCT", current.getUsername(), "Added new product: " + nameFld.getText(), dateTimeNow);
 
@@ -294,6 +276,39 @@ public class MgmtProduct extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_addBtnActionPerformed
+
+    private boolean isProductValid(String name, String stock, String price){
+
+        int STOCK_LIMIT = 10_000;
+        double PRICE_LIMIT = 10000.00;
+        int PRODUCT_NAME_MAX_LENGTH = 255;
+        ArrayList<Product> products = sqlite.getProducts();
+
+        if (name.isEmpty() || stock.isEmpty() || price.isEmpty()){
+            JOptionPane.showMessageDialog(null, "Please complete the add product form", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (Integer.parseInt(stock) < 0 || Float.parseFloat(price) < 0){
+            JOptionPane.showMessageDialog(null, "Stock and price must be non-negative", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (Integer.parseInt(stock) > STOCK_LIMIT || Double.parseDouble(price) > PRICE_LIMIT){
+            JOptionPane.showMessageDialog(null, "Stock/price exceeds the limit.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (name.length() > PRODUCT_NAME_MAX_LENGTH){
+            JOptionPane.showMessageDialog(null, "Product name too long.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (!name.matches("^[a-zA-Z0-9\\\\s\\\\-\\\\._,\\\\'/&\\\\(\\\\)\\\\+:\\\\!\\\\?#]+$")){
+            JOptionPane.showMessageDialog(null, "Invalid product name", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if(productNameExists(products, name)) {
+            JOptionPane.showMessageDialog(null, "Product already exist.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (!price.matches("^\\d+(\\.\\d{1,2})?$")) {
+            JOptionPane.showMessageDialog(null, "Price must be a valid number with up to 2 decimal places.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else {
+            return true;
+        }
+    }
 
     private boolean productNameExists(ArrayList<Product> products, String newProductName) {
         for (Product product : products) {
