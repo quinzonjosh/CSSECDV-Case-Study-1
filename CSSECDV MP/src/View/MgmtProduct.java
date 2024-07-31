@@ -280,12 +280,12 @@ public class MgmtProduct extends javax.swing.JPanel {
     private boolean isProductValid(String name, String stock, String price){
 
         int STOCK_LIMIT = 10_000;
-        double PRICE_LIMIT = 10000.00;
+        double PRICE_LIMIT = 10_000.00;
         int PRODUCT_NAME_MAX_LENGTH = 255;
         ArrayList<Product> products = sqlite.getProducts();
 
         if (name.isEmpty() || stock.isEmpty() || price.isEmpty()){
-            JOptionPane.showMessageDialog(null, "Please complete the add product form", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Please complete the product form", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             return false;
         } else if (Integer.parseInt(stock) < 0 || Float.parseFloat(price) < 0){
             JOptionPane.showMessageDialog(null, "Stock and price must be non-negative", "Invalid Input", JOptionPane.ERROR_MESSAGE);
@@ -338,17 +338,22 @@ public class MgmtProduct extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, message, "EDIT PRODUCT", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
             if (result == JOptionPane.OK_OPTION) {
-
                 try {
                     Session current = SessionManager.checkSession(this.sqlite, this.session);
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
                     LocalDateTime now = LocalDateTime.now();
                     String dateTimeNow = now.format(formatter);
 
-                    sqlite.updateProduct(oldProductName, nameFld.getText(), Integer.parseInt(stockFld.getText()), Float.parseFloat(priceFld.getText()));
-                    sqlite.addLogs("EDIT_PRODUCT", current.getUsername(), "Edited product: " + nameFld.getText(), dateTimeNow);
+                    if(isProductValid(nameFld.getText(), stockFld.getText(), priceFld.getText())){
+                        sqlite.updateProduct(oldProductName, nameFld.getText(), Integer.parseInt(stockFld.getText()), Float.parseFloat(priceFld.getText()));
+                        sqlite.addLogs("EDIT_PRODUCT", current.getUsername(), "Edited product: " + nameFld.getText(), dateTimeNow);
 
-                    loadProducts();
+                        loadProducts();
+
+                        JOptionPane.showMessageDialog(null, "Edit product successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Please enter a valid number for stock and price.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {
                     Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
                 }
