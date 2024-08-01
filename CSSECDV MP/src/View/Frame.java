@@ -429,6 +429,16 @@ public class Frame extends javax.swing.JFrame {
         this.logAction("SESSION_KEY", "SESSIONKEY", String.format("[SUCCESS] Session key for username = %s created.", username));
     }
    
+    private boolean usernameExistForLogin (String username){
+        if (main.sqlite.usernameExist(username)){
+            this.logAction("ATTEMPT_LOGIN", username, String.format("[SUCCESS] Input username = %s verified to login.", username));
+            return true;
+        }
+        
+        this.logAction("ATTEMPT_LOGIN", username, String.format("[FAIL] Input username = %s does not exist.", username));
+        return false;
+    }
+    
     public boolean usernameExist(String username){
         if (main.sqlite.usernameExist(username)){
             this.logAction("ATTEMPT_USERNAME", username, String.format("[SUCCESS] Input username = %s verified.", username));
@@ -466,7 +476,7 @@ public class Frame extends javax.swing.JFrame {
     
     public boolean attemptLoginSuccessful(String username, String password){
         
-        if (this.usernameExist(username)){
+        if (this.usernameExistForLogin(username)){
             
             //check if username and password is correct
             if(!main.sqlite.isLoginSuccessful(username, password)){
