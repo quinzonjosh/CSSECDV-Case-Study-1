@@ -625,23 +625,27 @@ public class SQLite {
         pstmt.executeUpdate();
     }
     
-    public HashMap<Integer, String> getAccessRoles() {
-        String sql = "SELECT code, access FROM access_roles";
-        HashMap<Integer, String> accessMatrix = new HashMap<>();
-        
+    
+    public String getAccessRole(int role){
+        String sql = "SELECT access from access_roles WHERE code = ?";
         try (Connection conn = DriverManager.getConnection(driverURL);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)){
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
             
-            while (rs.next()) {
-                accessMatrix.put(rs.getInt("code"), rs.getString("access"));
+            pstmt.setInt(1, role);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if(rs.next()){
+//                System.out.println("User: " + rs.getString("username") + " exist.");
+                return rs.getString(1);
             }
-           
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return accessMatrix;
+        
+        return "";
     }
+    
     
     public ArrayList<History> getHistory(){
         String sql = "SELECT id, username, name, stock, timestamp FROM history";

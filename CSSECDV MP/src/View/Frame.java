@@ -239,7 +239,7 @@ public class Frame extends javax.swing.JFrame {
     private void adminBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adminBtnActionPerformed
         try {
             Session session = SessionManager.checkSession(main.sqlite, this.userSession);
-            if(this.accessMatrix.get(session.getRole()).equals("Administrator")){
+            if(main.sqlite.getAccessRole(session.getRole()).equals("Administrator")){
                 this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Administrator"));
                 
                 adminHomePnl.passSession(userSession);
@@ -265,7 +265,7 @@ public class Frame extends javax.swing.JFrame {
        
         try {
             Session session = SessionManager.checkSession(main.sqlite, this.userSession);
-            if(this.accessMatrix.get(session.getRole()).equals("Manager")){
+            if(main.sqlite.getAccessRole(session.getRole()).equals("Manager")){
                 this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Manager"));
                 
                 managerHomePnl.passSession(userSession);
@@ -291,7 +291,7 @@ public class Frame extends javax.swing.JFrame {
         
         try {
             Session session = SessionManager.checkSession(main.sqlite, this.userSession);
-            if(this.accessMatrix.get(session.getRole()).equals("Staff")){
+            if(main.sqlite.getAccessRole(session.getRole()).equals("Staff")){
                 this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Staff"));
                 
                 staffHomePnl.passSession(userSession);
@@ -317,7 +317,7 @@ public class Frame extends javax.swing.JFrame {
         
         try {
             Session session = SessionManager.checkSession(main.sqlite, this.userSession);
-            if(this.accessMatrix.get(session.getRole()).equals("Client")){
+            if(main.sqlite.getAccessRole(session.getRole()).equals("Client")){
                 this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Client"));
                 
                 clientHomePnl.passSession(userSession);
@@ -400,8 +400,7 @@ public class Frame extends javax.swing.JFrame {
         
 //        Content.remove(clientHomePnl);
         Content.add(clientHomePnl, "clientHomePnl");
-        
-        this.getAccessMatrix();
+       
         this.setVisible(true);
     }
     
@@ -420,11 +419,7 @@ public class Frame extends javax.swing.JFrame {
     
     
     
-    private void getAccessMatrix(){
-       HashMap<Integer, String> matrix = main.sqlite.getAccessRoles();
-       this.accessMatrix = matrix;
-           
-    }
+
     
     
     public void registerAction(String username, String password, String confpass) throws Exception {
