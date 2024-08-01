@@ -56,7 +56,7 @@ public class Frame extends javax.swing.JFrame {
                         } catch(Exception ex){
                             ex.printStackTrace();
                             JOptionPane.showMessageDialog(Frame.this, "Connot logout right now. Please try again later or report to admin for details.", "Logout Unsuccessful", JOptionPane.ERROR_MESSAGE);
-                            Frame.this.logAction("LOG_OUT", "SESSIONID: " + Frame.this.userSession, String.format("[FAIL] Failure to logout out due to server error: %s.", ex));
+                            Frame.this.logAction("LOG_OUT", "current user", String.format("[FAIL] Failure to logout out due to server error: %s.", ex));
                         }
                     }
                     else {
@@ -340,24 +340,31 @@ public class Frame extends javax.swing.JFrame {
     }//GEN-LAST:event_clientBtnActionPerformed
 
     private void logoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutBtnActionPerformed
-        
         try{
-           this.logOutProcedure();
-           this.logAction("LOG_OUT", "SESSIONID: " + this.userSession, String.format("[SUCCESS] Delinked and Deleted current session %s.", this.userSession));
-
-           Container.removeAll();
-           this.init(main);
-           this.logAction("LOG_OUT", "SESSIONID: " + this.userSession, "[SUCCESS] Current user logging out.");
-           frameView.show(Container, "loginPnl");
-           
+            this.logOutProcedure(); 
+            
         } catch (Exception e){
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Cannot logout right now. Please try again later or report to admin for details.", "Logout Unsuccessful", JOptionPane.ERROR_MESSAGE);
-            this.logAction("LOG_OUT", "SESSIONID: " + this.userSession, String.format("[FAIL] Failure to logout out due to server error: %s.", e));
+            this.logAction("LOG_OUT", "current user", String.format("[FAIL] Failure to logout out due to server error: %s.", e));
         }
-        
-  
+       
     }//GEN-LAST:event_logoutBtnActionPerformed
+    
+    private void logOutProcedure() throws Exception {
+        
+        Session session = SessionManager.checkSession(main.sqlite, this.userSession);
+        String username = session.getUsername();
+        
+        main.sqlite.removeSession(this.userSession);
+        this.userSession = "";
+        this.logAction("LOG_OUT", username, String.format("[SUCCESS] Delinked and Deleted current session from user %s.", username));
+
+        Container.removeAll();
+        this.init(main);
+        this.logAction("LOG_OUT", username, String.format("[SUCCESS] Current user %s logging out.", username));
+        frameView.show(Container, "loginPnl");
+    }
     
     public void init(Main controller){
 //        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -410,10 +417,7 @@ public class Frame extends javax.swing.JFrame {
         frameView.show(Container, "registerPnl");
     }
     
-    private void logOutProcedure()throws Exception{
-         main.sqlite.removeSession(userSession);
-         this.userSession = "";
-    }
+    
     
     
     private void getAccessMatrix(){
