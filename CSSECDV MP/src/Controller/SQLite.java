@@ -66,7 +66,7 @@ public class SQLite {
             stmt.execute(sql);
             System.out.println("Table logs in database.db created.");
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
     }
      
@@ -121,7 +121,7 @@ public class SQLite {
             stmt.execute(sql);
             System.out.println("Table sessions in database.db created.");
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
     }
     
@@ -191,12 +191,11 @@ public class SQLite {
             pstmt.setString(4, timestamp);
 
             pstmt.executeUpdate();
-            conn.close();
             
             this.addLogScreen(event, username, desc, timestamp);
             
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }  
     }
     
@@ -210,16 +209,14 @@ public class SQLite {
             + ");";
         
         Connection conn = DriverManager.getConnection(driverURL);
-        Statement stmt = conn.createStatement();
-        
-        stmt.execute(sql);
-        System.out.println("Table logs_screen in database.db created.");
-        conn.close();
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.executeUpdate();
     } 
     
     private void addLogScreen(String event, String username, String desc, String timestamp) {
         try{
             this.createLogsScreenTable();
+            
             String sql = "INSERT INTO logs_screen(event,username,desc,timestamp) VALUES(?, ?, ?, ?)";
             Connection conn = DriverManager.getConnection(driverURL);
             PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -230,7 +227,6 @@ public class SQLite {
             pstmt.setString(4, timestamp);
 
             pstmt.executeUpdate();
-            
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -481,7 +477,7 @@ public class SQLite {
             }
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return false;
@@ -503,7 +499,7 @@ public class SQLite {
             }
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return false;
@@ -544,7 +540,7 @@ public class SQLite {
             }
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return -1;
@@ -570,7 +566,7 @@ public class SQLite {
             
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return false;
@@ -646,7 +642,7 @@ public class SQLite {
             }
            
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         return accessMatrix;
     }
@@ -705,8 +701,8 @@ public class SQLite {
         Connection conn = DriverManager.getConnection(driverURL);
         Statement stmt = conn.createStatement();
         stmt.execute(sql);
-        System.out.println("Table logs_screen in database.db dropped.");
-//        conn.close();
+//        System.out.println("Table logs_screen in database.db dropped.");
+        conn.close();
     }
     
    
@@ -715,16 +711,38 @@ public class SQLite {
         
         try{
             this.dropLogs();
-        
-            String sql = "CREATE TABLE IF NOT EXISTS logs_screen AS\n" +
-                        "SELECT id, event, username, logs.desc, timestamp\n" +
-    "                   FROM logs;";
-
+            this.createLogsScreenTable();
+//            System.out.println("Table logs_screen in database.db created.");
+            
+            String sql = "SELECT id, event, username, desc, timestamp FROM logs";
             Connection conn = DriverManager.getConnection(driverURL);
             Statement stmt = conn.createStatement();
-            stmt.execute(sql);
-            System.out.println("Table logs_screen in database.db created.");
+            
+            ResultSet rs = stmt.executeQuery(sql);
+            
+            
+            ArrayList<Logs> logs = new ArrayList(); 
+            
+            while (rs.next()) {
+                logs.add(new Logs(
+                        rs.getInt("id"),
+                        rs.getString("event"), 
+                        rs.getString("username"), 
+                        rs.getString("desc"), 
+                        rs.getString("timestamp")
+                ));
+            }
+            
             conn.close();
+            
+            for(Logs log: logs){
+                this.addLogScreen(log.getEvent(), 
+                        log.getUsername(), 
+                        log.getDesc(), 
+                        log.getTimestampString());
+            }
+            
+            
         }catch(Exception e){
             e.printStackTrace();
         }

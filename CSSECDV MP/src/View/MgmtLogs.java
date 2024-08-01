@@ -216,7 +216,7 @@ public class MgmtLogs extends javax.swing.JPanel {
                         this.sqlite.dropLogs();
                         
                         JOptionPane.showMessageDialog(this, "Logs has been deleted.", "Clear Table Successful", JOptionPane.INFORMATION_MESSAGE);
-                        this.logAction("CLEAR_LOGS", "SESSIONID: " + this.session, String.format("[SUCCESS] Logs has been deleted by user %s", this.username));
+                        this.logAction("CLEAR_LOGS", "SESSIONID: " + this.session, String.format("[SUCCESS] Logs screen has been deleted by user %s", this.username));
                         
                         //      CLEAR TABLE
                         for(int nCtr = tableModel.getRowCount(); nCtr > 0; nCtr--){
@@ -226,7 +226,7 @@ public class MgmtLogs extends javax.swing.JPanel {
                     }catch(Exception e){
                         e.printStackTrace();
                         JOptionPane.showMessageDialog(this, String.format("Logs has not been deleted due to %s.", e), "Clear Table Unsuccessful", JOptionPane.ERROR_MESSAGE);
-                        this.logAction("CLEAR_LOGS", "SESSIONID: " + this.session, String.format("[FAIL] Logs has not been deleted by user %s due to %s", this.username, e));
+                        this.logAction("CLEAR_LOGS", "SESSIONID: " + this.session, String.format("[FAIL] Logs screen has not been deleted by user %s due to %s", this.username, e));
                     
                     }
                     

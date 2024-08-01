@@ -104,6 +104,7 @@ public class Main {
         // Initialize User Interface
         Frame frame = new Frame();
         frame.init(this);
+        this.sqlite.reflectLogs();
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     }
     

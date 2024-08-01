@@ -407,8 +407,6 @@ public class Frame extends javax.swing.JFrame {
         Content.add(clientHomePnl, "clientHomePnl");
         
         this.getAccessMatrix();
-        main.sqlite.reflectLogs();
-        
         this.setVisible(true);
     }
     
