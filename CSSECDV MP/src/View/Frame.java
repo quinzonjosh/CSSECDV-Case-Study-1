@@ -450,18 +450,7 @@ public class Frame extends javax.swing.JFrame {
     
     public void createUserSession(String username) throws Exception {
         
-        //get role of user
-        int role = main.sqlite.getUserRole(username);
-       
-        //create a session instance
-        Session session = new Session(username, role);
-        
-
-        //encrypt session object to string
-        String encrypted = SessionManager.encrypt(main.sqlite, username, session);
-        
-        //create a session in sessions db (String session) that returns an ID
-        String id = main.sqlite.addSession(username, encrypted, new PasswordHasher());
+        String id = SessionManager.createSession(main.sqlite, username);
         this.logAction("CREATE_SESSION", username, String.format("[SUCCESS] Session created (ID: %s).", id));
         
         //pass ID to all panels 

@@ -41,7 +41,7 @@ public class SessionManager {
     }
     
     
-    public static String encrypt(SQLite database, String username, Session object) throws Exception {
+    private static String encrypt(SQLite database, String username, Session object) throws Exception {
         try {
             // Serialize the object to a byte array
             byte[] serializedObject = serializeObject(object);
@@ -66,7 +66,7 @@ public class SessionManager {
         }
     }
     
-    public static Session decrypt(SQLite database, String id, String encrypted) throws Exception{
+    private static Session decrypt(SQLite database, String id, String encrypted) throws Exception{
         try {
             // Decode the Base64 string
             byte[] encryptedData = Base64.getDecoder().decode(encrypted);
@@ -165,6 +165,22 @@ public class SessionManager {
 
         return session;
                
+    }
+    
+    public static String createSession(SQLite database, String username) throws Exception {
+        //get role of user
+        int role = database.getUserRole(username);
+       
+        //create a session instance
+        Session session = new Session(username, role);
+        
+
+        //encrypt session object to string
+        String encrypted = encrypt(database, username, session);
+        
+        //create a session in sessions db (String session) that returns an ID
+        String id = database.addSession(username, encrypted, new PasswordHasher());
+        return id;
     }
 
 }
