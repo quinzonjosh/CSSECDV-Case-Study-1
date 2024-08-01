@@ -6,14 +6,8 @@
 package View;
 
 import Controller.SQLite;
-import Model.History;
-import Model.Logs;
-import Model.Product;
-import Model.User;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.util.ArrayList;
-import javax.swing.table.DefaultTableModel;
 
 /**
  *

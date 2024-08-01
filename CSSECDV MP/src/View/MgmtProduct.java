@@ -5,6 +5,7 @@
  */
 package View;
 
+import Controller.PasswordHasher;
 import Controller.SQLite;
 import Controller.SessionManager;
 import Model.Product;
@@ -13,11 +14,9 @@ import Model.Session;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
@@ -30,6 +29,7 @@ public class MgmtProduct extends javax.swing.JPanel {
     public SQLite sqlite;
     public DefaultTableModel tableModel;
     private String session = "";
+    private PasswordHasher hasher = new PasswordHasher();
     
     public MgmtProduct(SQLite sqlite) {
         initComponents();
@@ -344,6 +344,8 @@ public class MgmtProduct extends javax.swing.JPanel {
                     LocalDateTime now = LocalDateTime.now();
                     String dateTimeNow = now.format(formatter);
 
+
+
                     if(isProductValid(nameFld.getText(), stockFld.getText(), priceFld.getText())){
                         sqlite.updateProduct(oldProductName, nameFld.getText(), Integer.parseInt(stockFld.getText()), Float.parseFloat(priceFld.getText()));
                         sqlite.addLogs("EDIT_PRODUCT", current.getUsername(), "Edited product: " + nameFld.getText(), dateTimeNow);
@@ -364,27 +366,65 @@ public class MgmtProduct extends javax.swing.JPanel {
     private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
         if(table.getSelectedRow() >= 0){
             int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete " + tableModel.getValueAt(table.getSelectedRow(), 0) + "?", "DELETE PRODUCT", JOptionPane.YES_NO_OPTION);
-            
+
             if (result == JOptionPane.YES_OPTION) {
-//                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
-                try {
-                    Session current = SessionManager.checkSession(this.sqlite, this.session);
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-                    LocalDateTime now = LocalDateTime.now();
-                    String dateTimeNow = now.format(formatter);
-
-                    sqlite.deleteProduct(tableModel.getValueAt(table.getSelectedRow(), 0).toString());
-                    sqlite.addLogs("DELETE_PRODUCT", current.getUsername(),
-                            "Deleted Product: " + tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
-                            dateTimeNow);
-
-                    loadProducts();
-                } catch (Exception ex) {
-                    Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                
+               
+//                try {
+//                    Session current = SessionManager.checkSession(this.sqlite, this.session);
+//                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+//                    LocalDateTime now = LocalDateTime.now();
+//                    String dateTimeNow = now.format(formatter);
+//
+//                    sqlite.deleteProduct(tableModel.getValueAt(table.getSelectedRow(), 0).toString());
+//                    sqlite.addLogs("DELETE_PRODUCT", current.getUsername(),
+//                            "Deleted Product: " + tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+//                            dateTimeNow);
+//
+//                    loadProducts();
+//                } catch (Exception ex) {
+//                    Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
+//                }
             }
         }
     }//GEN-LAST:event_deleteBtnActionPerformed
+    
+//    private boolean verifyUser(){
+//        try{
+//            Session current = SessionManager.checkSession(this.sqlite, this.session);
+//            JPasswordField password = new JPasswordField();
+//            designer(password, "PASSWORD");
+//            
+//            Object[] message = {
+//                "Enter Your Own Password:", password
+//            };
+//
+//            int result = JOptionPane.showConfirmDialog(null, message, "ENTER PASSWORD", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
+//            if(result == JOptionPane.OK_OPTION){
+//                String username = current.getUsername();
+//                String passText = new String(password.getPassword());
+//                try {
+//                    String hashedPassword = hasher.hash(hasher.hash(passText, "SHA-1"), "SHA-256");
+//                    if(sqlite.isLoginSuccessful(username, hashedPassword)){
+//                        sqlite.addLogs("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[SUCCESS] Password Verficiation of User %s OK", username));
+//                        return true;
+//                    }
+//                    else throw new Exception("Wrong Password!");
+//                } catch (Exception ex){
+//                    this.logAction("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[FAIL] Password Verficiation of User %s failed due to %s", username, ex.getMessage()));
+//                    JOptionPane.showMessageDialog(this, String.format("Wrong Password!"), "Verification Failed", JOptionPane.ERROR_MESSAGE);
+//                    ex.printStackTrace();
+//                    return false;
+//                }
+//            }
+//            
+//        } catch(Exception e){
+//            e.printStackTrace();
+//            this.logAction("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[FAIL] Server Failure due to %s", e));
+//        }
+//        
+//        return false;
+//    }
     
     public void disablePurchaseButton(){
         purchaseBtn.setVisible(false);
