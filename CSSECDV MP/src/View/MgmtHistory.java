@@ -215,6 +215,9 @@ public class MgmtHistory extends javax.swing.JPanel {
         init(this.session);
     }//GEN-LAST:event_reloadBtnActionPerformed
 
+    public void setSearchBtn(String text){
+        this.searchBtn.setText(text);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;

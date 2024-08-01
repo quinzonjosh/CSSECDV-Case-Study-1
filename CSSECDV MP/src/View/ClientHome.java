@@ -181,6 +181,7 @@ public class ClientHome extends javax.swing.JPanel {
 
     private void historyBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historyBtnActionPerformed
         mgmtHistory.init(this.session);
+        mgmtHistory.setSearchBtn("SEARCH PRODUCT");
         usersBtn.setForeground(Color.black);
         productsBtn.setForeground(Color.black);
         historyBtn.setForeground(Color.red);
