@@ -58,7 +58,6 @@ public class MgmtHistory extends javax.swing.JPanel {
             ArrayList<History> history = (current.getRole() == 2) ? sqlite.getHistory(current.getUsername()) : (current.getRole() == 4) ? sqlite.getHistory() : null;
 
             for(int nCtr = 0; nCtr < history.size(); nCtr++){
-                
                 Product product = sqlite.getProduct(history.get(nCtr).getName());
                 tableModel.addRow(new Object[]{
                     history.get(nCtr).getUsername(), 
@@ -175,7 +174,18 @@ public class MgmtHistory extends javax.swing.JPanel {
 
     private void searchBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBtnActionPerformed
         JTextField searchFld = new JTextField("0");
-        designer(searchFld, "SEARCH USERNAME OR PRODUCT");
+        Session current;
+        try {
+            current = SessionManager.checkSession(this.sqlite, this.session);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        if(current.getRole() == 2) {
+            designer(searchFld, "SEARCH PRODUCT");
+        } else {
+            designer(searchFld, "SEARCH USERNAME OR PRODUCT");
+        }
 
         Object[] message = {
             searchFld
@@ -193,9 +203,9 @@ public class MgmtHistory extends javax.swing.JPanel {
             ArrayList<History> history = sqlite.getHistory();
             for(int nCtr = 0; nCtr < history.size(); nCtr++){
                 if(searchFld.getText().contains(history.get(nCtr).getUsername()) ||
-                   history.get(nCtr).getUsername().contains(searchFld.getText()) ||
+                   history.get(nCtr).getUsername().contains(searchFld.getText().toLowerCase()) ||
                    searchFld.getText().contains(history.get(nCtr).getName()) ||
-                   history.get(nCtr).getName().contains(searchFld.getText())){
+                   history.get(nCtr).getName().contains(searchFld.getText().toLowerCase())){
 
                     Product product = sqlite.getProduct(history.get(nCtr).getName());
                     tableModel.addRow(new Object[]{
