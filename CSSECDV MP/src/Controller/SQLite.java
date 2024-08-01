@@ -436,6 +436,39 @@ public class SQLite {
         throw new Exception("No value found.");
     }
     
+    
+    public void updateSessionAccess(String id) throws Exception {
+        Connection conn = DriverManager.getConnection(driverURL);
+        String sql = "SELECT num_accesses FROM sessions WHERE id = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, id);
+        
+        
+        ResultSet rs = pstmt.executeQuery();
+            
+        if(rs.next()){
+            
+            int accesses = rs.getInt(1) + 1;
+            sql = "UPDATE sessions SET last_accessed = ?, num_accesses = ? WHERE id = ?";
+            pstmt = conn.prepareStatement(sql);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            sdf.setTimeZone(TimeZone.getDefault()); 
+            String date = sdf.format(new Date());
+
+            pstmt.setString(1, date);
+            pstmt.setInt(2, accesses);
+            pstmt.setString(3, id);
+
+
+            pstmt.executeUpdate();
+            conn.close();
+            
+        }
+    }
+    
+     
+    
     private void removeLinkToSession(String id) throws Exception {
         String sql = "DELETE FROM session_user_bridge WHERE session_id=(?)";
         

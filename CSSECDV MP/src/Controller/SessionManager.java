@@ -159,6 +159,7 @@ public class SessionManager {
     public static Session checkSession(SQLite database, String id) throws Exception {
         //get session using id
         String encrypted = database.getSession(id);
+        database.updateSessionAccess(id);
         
         //decrypt using id and encrypted session
         Session session = decrypt(database, id, encrypted);
