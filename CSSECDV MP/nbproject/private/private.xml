@@ -2,18 +2,9 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-<<<<<<< HEAD
         <group>
-            <file>file:/D:/Programming%20Files/School%20Files/Java/CSSECDV/SECDEV%20MP/CSSECDV%20MP/src/View/MgmtProduct.java</file>
-            <file>file:/D:/Programming%20Files/School%20Files/Java/CSSECDV/SECDEV%20MP/CSSECDV%20MP/src/Controller/SQLite.java</file>
-            <file>file:/D:/Programming%20Files/School%20Files/Java/CSSECDV/SECDEV%20MP/CSSECDV%20MP/src/Model/Product.java</file>
-            <file>file:/D:/Programming%20Files/School%20Files/Java/CSSECDV/SECDEV%20MP/CSSECDV%20MP/src/View/ClientHome.java</file>
-            <file>file:/D:/Programming%20Files/School%20Files/Java/CSSECDV/SECDEV%20MP/CSSECDV%20MP/src/Controller/PasswordValidator.java</file>
-            <file>file:/D:/Programming%20Files/School%20Files/Java/CSSECDV/SECDEV%20MP/CSSECDV%20MP/src/View/MgmtHistory.java</file>
-            <file>file:/D:/Programming%20Files/School%20Files/Java/CSSECDV/SECDEV%20MP/CSSECDV%20MP/src/View/MgmtUser.java</file>
+            <file>file:/C:/Users/Cymon/Documents/GitHub/CSSECDV-Case-Study-1/CSSECDV%20MP/src/Controller/SQLite.java</file>
+            <file>file:/C:/Users/Cymon/Documents/GitHub/CSSECDV-Case-Study-1/CSSECDV%20MP/src/Controller/SessionManager.java</file>
         </group>
-=======
-        <group/>
->>>>>>> 09cc53458fa5a23cf67ce95dfbd86d77a2a601a3
     </open-files>
 </project-private>
