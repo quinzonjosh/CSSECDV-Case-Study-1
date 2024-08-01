@@ -6,14 +6,8 @@
 package View;
 //[255,102,51]
 import Controller.SQLite;
-import Model.History;
-import Model.Logs;
-import Model.Product;
-import Model.User;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.util.ArrayList;
-import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -25,7 +19,7 @@ public class ClientHome extends javax.swing.JPanel {
     public MgmtLogs mgmtLogs;
     public MgmtProduct mgmtProduct;
     public MgmtUser mgmtUser;
-    
+
     private String session = "";
     
     private CardLayout contentView = new CardLayout();

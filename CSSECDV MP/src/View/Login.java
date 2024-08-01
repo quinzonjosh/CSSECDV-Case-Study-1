@@ -3,7 +3,6 @@ package View;
 
 import Controller.PasswordHasher;
 import CustomExceptions.*;
-import java.util.Arrays;
 import javax.swing.JOptionPane;
 
 public class Login extends javax.swing.JPanel {

@@ -7,23 +7,11 @@ import Model.Session;
 import java.awt.CardLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.crypto.SecretKey;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.WindowConstants;
 
 public class Frame extends javax.swing.JFrame {
 
@@ -252,7 +240,7 @@ public class Frame extends javax.swing.JFrame {
         try {
             Session session = SessionManager.checkSession(main.sqlite, this.userSession);
             if(this.accessMatrix.get(session.getRole()).equals("Administrator")){
-                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Administrator"));
+                this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Administrator"));
                 
                 adminHomePnl.passSession(userSession);
                 Content.remove(adminHomePnl);
@@ -262,12 +250,12 @@ public class Frame extends javax.swing.JFrame {
             }
             else {
                 JOptionPane.showMessageDialog(this, "You do not have access to this page.", "Access Failure", JOptionPane.ERROR_MESSAGE);
-                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Administrator"));
+                this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Administrator"));
             }
         } catch(Exception e){
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Server error. Please contact admin.", "Server Failure", JOptionPane.ERROR_MESSAGE);
-            this.logAction("CHECK_SESSION", "SESSIONID: " + this.userSession, String.format("[FAIL] server failure due to %s", e));
+            this.logAction("CHECK_SESSION", this.userSession, String.format("[FAIL] server failure due to %s", e));
         }
         
         
@@ -278,7 +266,7 @@ public class Frame extends javax.swing.JFrame {
         try {
             Session session = SessionManager.checkSession(main.sqlite, this.userSession);
             if(this.accessMatrix.get(session.getRole()).equals("Manager")){
-                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Manager"));
+                this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Manager"));
                 
                 managerHomePnl.passSession(userSession);
                 Content.remove(managerHomePnl);
@@ -288,12 +276,12 @@ public class Frame extends javax.swing.JFrame {
             }
             else {
                 JOptionPane.showMessageDialog(this, "You do not have access to this page.", "Access Failure", JOptionPane.ERROR_MESSAGE);
-                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Manager"));
+                this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Manager"));
             }
         } catch(Exception e){
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Server error. Please contact admin.", "Server Failure", JOptionPane.ERROR_MESSAGE);
-            this.logAction("CHECK_SESSION", "SESSIONID: " + this.userSession, String.format("[FAIL] server failure due to %s", e));
+            this.logAction("CHECK_SESSION", this.userSession, String.format("[FAIL] server failure due to %s", e));
         }
         
         
@@ -304,7 +292,7 @@ public class Frame extends javax.swing.JFrame {
         try {
             Session session = SessionManager.checkSession(main.sqlite, this.userSession);
             if(this.accessMatrix.get(session.getRole()).equals("Staff")){
-                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Staff"));
+                this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Staff"));
                 
                 staffHomePnl.passSession(userSession);
                 Content.remove(staffHomePnl);
@@ -314,12 +302,12 @@ public class Frame extends javax.swing.JFrame {
             }
             else {
                 JOptionPane.showMessageDialog(this, "You do not have access to this page.", "Access Failure", JOptionPane.ERROR_MESSAGE);
-                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Staff"));
+                this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Staff"));
             }
         } catch(Exception e){
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Server error. Please contact admin.", "Server Failure", JOptionPane.ERROR_MESSAGE);
-            this.logAction("CHECK_SESSION", "SESSIONID: " + this.userSession, String.format("[FAIL] server failure due to %s", e));
+            this.logAction("CHECK_SESSION", this.userSession, String.format("[FAIL] server failure due to %s", e));
         }
         
         
@@ -330,7 +318,7 @@ public class Frame extends javax.swing.JFrame {
         try {
             Session session = SessionManager.checkSession(main.sqlite, this.userSession);
             if(this.accessMatrix.get(session.getRole()).equals("Client")){
-                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Client"));
+                this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[SUCCESS] User verified to access %s page", "Client"));
                 
                 clientHomePnl.passSession(userSession);
                 Content.remove(clientHomePnl);
@@ -340,7 +328,7 @@ public class Frame extends javax.swing.JFrame {
             }
             else {
                 JOptionPane.showMessageDialog(this, "You do not have access to this page.", "Access Failure", JOptionPane.ERROR_MESSAGE);
-                this.logAction("ACCESS_PAGE", "USERNAME: " + session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Client"));
+                this.logAction("ACCESS_PAGE", session.getUsername(), String.format("[FAIL] User not verified to access %s page", "Client"));
             }
         } catch(Exception e){
             e.printStackTrace();
