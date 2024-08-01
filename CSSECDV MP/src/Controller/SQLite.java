@@ -65,7 +65,7 @@ public class SQLite {
             stmt.execute(sql);
             System.out.println("Table logs in database.db created.");
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
     }
      
@@ -101,6 +101,7 @@ public class SQLite {
             Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
             System.out.println("Table users in database.db created.");
+            
         } catch (Exception ex) {
             System.out.print(ex);
         }
@@ -119,7 +120,7 @@ public class SQLite {
             stmt.execute(sql);
             System.out.println("Table sessions in database.db created.");
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -150,18 +151,6 @@ public class SQLite {
         }
     }
     
-    public void dropLogsTable() {
-        String sql = "DROP TABLE IF EXISTS logs;";
-
-        try (Connection conn = DriverManager.getConnection(driverURL);
-            Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
-            System.out.println("Table logs in database.db dropped.");
-        } catch (Exception ex) {
-            System.out.print(ex);
-        }
-    }
-    
     public void dropProductTable() {
         String sql = "DROP TABLE IF EXISTS product;";
 
@@ -185,6 +174,7 @@ public class SQLite {
             System.out.print(ex);
         }
     }
+    
     
     public void addHistory(String username, String name, int stock, String timestamp) {
         String sql = "INSERT INTO history(username,name,stock,timestamp) VALUES(?,?,?,?)";
@@ -215,9 +205,46 @@ public class SQLite {
             pstmt.setString(4, timestamp);
 
             pstmt.executeUpdate();
+            
+            this.addLogScreen(event, username, desc, timestamp);
+            
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
+        }  
+    }
+    
+    private void createLogsScreenTable() throws Exception{
+        String sql = "CREATE TABLE IF NOT EXISTS logs_screen (\n"
+            + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+            + " event TEXT NOT NULL,\n"
+            + " username TEXT NOT NULL,\n"
+            + " desc TEXT NOT NULL,\n"
+            + " timestamp TEXT NOT NULL\n"
+            + ");";
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.executeUpdate();
+    } 
+    
+    private void addLogScreen(String event, String username, String desc, String timestamp) {
+        try{
+            this.createLogsScreenTable();
+            
+            String sql = "INSERT INTO logs_screen(event,username,desc,timestamp) VALUES(?, ?, ?, ?)";
+            Connection conn = DriverManager.getConnection(driverURL);
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            
+            pstmt.setString(1, event);
+            pstmt.setString(2, username);
+            pstmt.setString(3, desc);
+            pstmt.setString(4, timestamp);
+
+            pstmt.executeUpdate();
+        } catch(Exception e){
+            e.printStackTrace();
         }
+       
     }
     
     public void addProduct(String name, int stock, double price) {
@@ -231,6 +258,8 @@ public class SQLite {
             pstmt.setDouble(3, price);
             
             pstmt.executeUpdate();
+            
+            
         } catch (Exception ex) {
             System.out.print(ex);
         }
@@ -451,7 +480,7 @@ public class SQLite {
             }
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return false;
@@ -473,7 +502,7 @@ public class SQLite {
             }
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return false;
@@ -514,7 +543,7 @@ public class SQLite {
             }
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return -1;
@@ -540,7 +569,7 @@ public class SQLite {
             
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return false;
@@ -609,7 +638,7 @@ public class SQLite {
             }
            
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         return accessMatrix;
     }
@@ -660,12 +689,15 @@ public class SQLite {
     }
     
     public ArrayList<Logs> getLogs(){
-        String sql = "SELECT id, event, username, desc, timestamp FROM logs";
-        ArrayList<Logs> logs = new ArrayList<Logs>();
         
-        try (Connection conn = DriverManager.getConnection(driverURL);
+        ArrayList<Logs> logs = new ArrayList<Logs>();
+        try{
+            String sql = "SELECT id, event, username, desc, timestamp FROM logs_screen";
+            
+            Connection conn = DriverManager.getConnection(driverURL);
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)){
+            
+            ResultSet rs = stmt.executeQuery(sql);
             
             while (rs.next()) {
                 logs.add(new Logs(rs.getInt("id"),
@@ -674,13 +706,88 @@ public class SQLite {
                                    rs.getString("desc"),
                                    rs.getString("timestamp")));
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            
+        }catch(Exception e){
+            e.printStackTrace();
         }
+        
         return logs;
     }
     
     public ArrayList<Product> getProducts(){
+        String sql = "SELECT id, name, stock, price FROM product";
+        ArrayList<Product> products = new ArrayList<Product>();
+
+        try (Connection conn = DriverManager.getConnection(driverURL);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)){
+
+            while (rs.next()) {
+                products.add(new Product(rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getInt("stock"),
+                        rs.getFloat("price")));
+            }
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        return products;
+    }
+
+    public void dropLogs() throws Exception {
+        String sql = "DROP TABLE IF EXISTS logs_screen;";
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        Statement stmt = conn.createStatement();
+        stmt.execute(sql);
+//        System.out.println("Table logs_screen in database.db dropped.");
+        conn.close();
+    }
+    
+   
+    
+    public void reflectLogs(){
+        
+        try{
+            this.dropLogs();
+            this.createLogsScreenTable();
+//            System.out.println("Table logs_screen in database.db created.");
+            
+            String sql = "SELECT id, event, username, desc, timestamp FROM logs";
+            Connection conn = DriverManager.getConnection(driverURL);
+            Statement stmt = conn.createStatement();
+            
+            ResultSet rs = stmt.executeQuery(sql);
+            
+            
+            ArrayList<Logs> logs = new ArrayList(); 
+            
+            while (rs.next()) {
+                logs.add(new Logs(
+                        rs.getInt("id"),
+                        rs.getString("event"), 
+                        rs.getString("username"), 
+                        rs.getString("desc"), 
+                        rs.getString("timestamp")
+                ));
+            }
+            
+            conn.close();
+            
+            for(Logs log: logs){
+                this.addLogScreen(log.getEvent(), 
+                        log.getUsername(), 
+                        log.getDesc(), 
+                        log.getTimestampString());
+            }
+            
+            
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    public ArrayList<Product> getProduct(){
         String sql = "SELECT id, name, stock, price FROM product";
         ArrayList<Product> products = new ArrayList<Product>();
         
