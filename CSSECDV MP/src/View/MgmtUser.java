@@ -36,6 +36,7 @@ public class MgmtUser extends javax.swing.JPanel {
     private final PasswordValidator validator = new PasswordValidator();
     private final PasswordHasher hasher = new PasswordHasher();
     private String session = "";
+    private Session currentSession;
     
     public MgmtUser(SQLite sqlite) {
         initComponents();
@@ -199,6 +200,7 @@ public class MgmtUser extends javax.swing.JPanel {
     private boolean verifyUser(){
         try{
             Session current = SessionManager.checkSession(this.sqlite, this.session);
+            this.currentSession = current;
             JPasswordField password = new JPasswordField();
             designer(password, "PASSWORD");
             
@@ -213,12 +215,12 @@ public class MgmtUser extends javax.swing.JPanel {
                 try {
                     String hashedPassword = hasher.hash(hasher.hash(passText, "SHA-1"), "SHA-256");
                     if(this.sqlite.isLoginSuccessful(username, hashedPassword)){
-                        this.logAction("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[SUCCESS] Password Verficiation of User %s OK", username));
+                        this.logAction("VERIFY_PASSWORD", this.currentSession.getUsername(), String.format("[SUCCESS] Password Verficiation of User %s OK", username));
                         return true;
                     }
                     else throw new Exception("Wrong Password!");
                 } catch (Exception ex){
-                    this.logAction("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[FAIL] Password Verficiation of User %s failed due to %s", username, ex.getMessage()));
+                    this.logAction("VERIFY_PASSWORD",  this.currentSession.getUsername(), String.format("[FAIL] Password Verficiation of User %s failed due to %s", username, ex.getMessage()));
                     JOptionPane.showMessageDialog(this, String.format("Wrong Password!"), "Verification Failed", JOptionPane.ERROR_MESSAGE);
                     ex.printStackTrace();
                     return false;
@@ -227,7 +229,7 @@ public class MgmtUser extends javax.swing.JPanel {
             
         } catch(Exception e){
             e.printStackTrace();
-            this.logAction("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[FAIL] Server Failure due to %s", e));
+            this.logAction("VERIFY_PASSWORD",  this.currentSession.getUsername(), String.format("[FAIL] Server Failure due to %s", e));
         }
         
         return false;

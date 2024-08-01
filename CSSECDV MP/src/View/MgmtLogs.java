@@ -29,7 +29,7 @@ public class MgmtLogs extends javax.swing.JPanel {
     public SQLite sqlite;
     public DefaultTableModel tableModel;
     private String session = "";
-    private String username = "";
+    private Session currentSession;
     private final PasswordValidator validator = new PasswordValidator();
     private final PasswordHasher hasher = new PasswordHasher();
     
@@ -162,7 +162,7 @@ public class MgmtLogs extends javax.swing.JPanel {
     private boolean verifyUser(){
         try{
             Session current = SessionManager.checkSession(this.sqlite, this.session);
-            this.username = current.getUsername();
+            this.currentSession = current;
             JPasswordField password = new JPasswordField();
             designer(password, "PASSWORD");
             
@@ -177,12 +177,12 @@ public class MgmtLogs extends javax.swing.JPanel {
                 try {
                     String hashedPassword = hasher.hash(hasher.hash(passText, "SHA-1"), "SHA-256");
                     if(this.sqlite.isLoginSuccessful(username, hashedPassword)){
-                        this.logAction("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[SUCCESS] Password Verficiation of User %s OK", username));
+                        this.logAction("VERIFY_PASSWORD", this.currentSession.getUsername(), String.format("[SUCCESS] Password Verficiation of User %s OK", username));
                         return true;
                     }
                     else throw new Exception("Wrong Password!");
                 } catch (Exception ex){
-                    this.logAction("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[FAIL] Password Verficiation of User %s failed due to %s", username, ex.getMessage()));
+                    this.logAction("VERIFY_PASSWORD", this.currentSession.getUsername(), String.format("[FAIL] Password Verficiation of User %s failed due to %s", username, ex.getMessage()));
                     JOptionPane.showMessageDialog(this, String.format("Wrong Password!"), "Verification Failed", JOptionPane.ERROR_MESSAGE);
                     ex.printStackTrace();
                     return false;
@@ -191,7 +191,7 @@ public class MgmtLogs extends javax.swing.JPanel {
             
         } catch(Exception e){
             e.printStackTrace();
-            this.logAction("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[FAIL] Server Failure due to %s", e));
+            this.logAction("VERIFY_PASSWORD", this.currentSession.getUsername(), String.format("[FAIL] Server Failure due to %s", e));
         }
         
         return false;
@@ -214,9 +214,8 @@ public class MgmtLogs extends javax.swing.JPanel {
                     try {
                         
                         this.sqlite.dropLogs();
-                        
                         JOptionPane.showMessageDialog(this, "Logs has been deleted.", "Clear Table Successful", JOptionPane.INFORMATION_MESSAGE);
-                        this.logAction("CLEAR_LOGS", "SESSIONID: " + this.session, String.format("[SUCCESS] Logs screen has been deleted by user %s", this.username));
+                        this.logAction("CLEAR_LOGS", this.currentSession.getUsername(), String.format("[SUCCESS] Logs screen has been deleted by user %s", this.currentSession.getUsername()));
                         
                         //      CLEAR TABLE
                         for(int nCtr = tableModel.getRowCount(); nCtr > 0; nCtr--){
@@ -226,7 +225,7 @@ public class MgmtLogs extends javax.swing.JPanel {
                     }catch(Exception e){
                         e.printStackTrace();
                         JOptionPane.showMessageDialog(this, String.format("Logs has not been deleted due to %s.", e), "Clear Table Unsuccessful", JOptionPane.ERROR_MESSAGE);
-                        this.logAction("CLEAR_LOGS", "SESSIONID: " + this.session, String.format("[FAIL] Logs screen has not been deleted by user %s due to %s", this.username, e));
+                        this.logAction("CLEAR_LOGS", this.currentSession.getUsername(), String.format("[FAIL] Logs screen has not been deleted by user %s due to %s", this.currentSession.getUsername(), e));
                     
                     }
                     
