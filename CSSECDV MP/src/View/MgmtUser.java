@@ -14,13 +14,10 @@ import Model.Session;
 import Model.User;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
@@ -257,13 +254,13 @@ public class MgmtUser extends javax.swing.JPanel {
                     try {
                         this.sqlite.changeUserRole(username, role);
                         JOptionPane.showMessageDialog(this, String.format("User %s changed to role = %s", username, result), "Edit Role Successful", JOptionPane.INFORMATION_MESSAGE);
-                        this.logAction("CHANGE_ROLE", username, String.format("[SUCCESS] Role of User %s changed to role = %c", username, role));
+                        this.logAction("CHANGE_ROLE", currentSession.getUsername(), String.format("[SUCCESS] Role of User %s changed to role = %c", username, role));
                         this.init(this.session);  
                     }
                     catch(Exception e){
                         System.out.println(e);
                         JOptionPane.showMessageDialog(this, String.format("User %s attempt to change role to %s has failed.", username, result), "Edit Role Failed", JOptionPane.ERROR_MESSAGE);
-                        this.logAction("CHANGE_ROLE", username, String.format("[FAIL] Failure on changing user role (selected = %c)", role));        
+                        this.logAction("CHANGE_ROLE", currentSession.getUsername(), String.format("[FAIL] Failure on changing user role (selected = %c)", role));
                     }
                 }
             }
@@ -284,13 +281,13 @@ public class MgmtUser extends javax.swing.JPanel {
 
                          this.sqlite.removeUser(username);
                          JOptionPane.showMessageDialog(this, String.format("Attempt to delete user %s is successful.", username), "Delete User Successful", JOptionPane.PLAIN_MESSAGE);
-                         this.logAction("REMOVE_USER", username, String.format("[SUCCESS] Successful on deleting user %s ", username));  
+                         this.logAction("REMOVE_USER", currentSession.getUsername(), String.format("[SUCCESS] Successful on deleting user %s ", username));
                          this.init(this.session);
 
                      } catch(Exception e){
                          System.out.println(e);
                          JOptionPane.showMessageDialog(this, String.format("Attempt to delete user %s has failed.", username), "Delete User Failed", JOptionPane.ERROR_MESSAGE);
-                         this.logAction("REMOVE_USER", username, String.format("[FAIL] Failure on deleting user %s ", username));        
+                         this.logAction("REMOVE_USER", currentSession.getUsername(), String.format("[FAIL] Failure on deleting user %s ", username));
                      }
                 }
             }
@@ -321,26 +318,26 @@ public class MgmtUser extends javax.swing.JPanel {
                         try {
                             this.sqlite.lockUser(username);
                             JOptionPane.showMessageDialog(this, String.format("User %s has been locked.", username), "Locking Successful", JOptionPane.INFORMATION_MESSAGE);
-                            this.logAction("CHANGE_TO_LOCK", username, String.format("[SUCCESS] Locking user %s successful", username));
+                            this.logAction("CHANGE_TO_LOCK", currentSession.getUsername(), String.format("[SUCCESS] Locking user %s successful", username));
                             this.init(this.session);
 
                         } catch (Exception e){
                             System.out.println(e);
                             JOptionPane.showMessageDialog(this, String.format("Attempt to lock user %s has failed.", username), "Locking Failed", JOptionPane.ERROR_MESSAGE);
-                            this.logAction("CHANGE_TO_LOCK", username, String.format("[FAIL] Locking user %s failed.", username)); 
+                            this.logAction("CHANGE_TO_LOCK", currentSession.getUsername(), String.format("[FAIL] Locking user %s failed.", username));
                         }
                     }
                     else {
                         try {
                             this.sqlite.unlockUser(username);
                             JOptionPane.showMessageDialog(this, String.format("User %s has been unlocked.", username), "Unlocking Successful", JOptionPane.INFORMATION_MESSAGE);
-                            this.logAction("CHANGE_TO_UNLOCK", username, String.format("[SUCCESS] Unlocking user %s successful", username));
+                            this.logAction("CHANGE_TO_UNLOCK", currentSession.getUsername(), String.format("[SUCCESS] Unlocking user %s successful", username));
                             this.init(this.session);
 
                         } catch (Exception e){
                             System.out.println(e);
                             JOptionPane.showMessageDialog(this, String.format("Attempt to unlock user %s has failed.", username), "Unlocking Failed", JOptionPane.ERROR_MESSAGE);
-                            this.logAction("CHANGE_TO_UNLOCK", username, String.format("[FAIL] Unlocking user %s failed.", username)); 
+                            this.logAction("CHANGE_TO_UNLOCK", currentSession.getUsername(), String.format("[FAIL] Unlocking user %s failed.", username));
                         }
                     }
                 }
@@ -384,19 +381,19 @@ public class MgmtUser extends javax.swing.JPanel {
 
                                 this.sqlite.changeUserPassword(username, finalHashedPassword);
                                 JOptionPane.showMessageDialog(this, String.format("User %s's password has been changed.", username), "Change Password Successful", JOptionPane.PLAIN_MESSAGE);
-                                this.logAction("CHANGE_PASS", username, String.format("[SUCCESS] Change password of user %s successful.", username));
+                                this.logAction("CHANGE_PASS", currentSession.getUsername(), String.format("[SUCCESS] Change password of user %s successful.", username));
                                 this.init(this.session);
                             }
                         }
                     } catch (PasswordException e){
                         e.setHeader("Change Password Failed");
                         JOptionPane.showMessageDialog(this, e.getMessage(), e.getHeader(), JOptionPane.ERROR_MESSAGE);  
-                        this.logAction("CHANGE_PASS", username, String.format("[FAIL] Input failure on user %s: %s", username, e.getMessage()));
+                        this.logAction("CHANGE_PASS", currentSession.getUsername(), String.format("[FAIL] Input failure on user %s: %s", username, e.getMessage()));
 
                     } catch(Exception e){
                         System.out.println(e);
                         JOptionPane.showMessageDialog(this, String.format("Attempt to change password of user %s has failed.", username), "Change Password Failed", JOptionPane.ERROR_MESSAGE);
-                        this.logAction("CHANGE_PASS", username, String.format("[FAIL] Change password of user %s failed.", username)); 
+                        this.logAction("CHANGE_PASS", currentSession.getUsername(), String.format("[FAIL] Change password of user %s failed.", username));
 
                     }
                 }

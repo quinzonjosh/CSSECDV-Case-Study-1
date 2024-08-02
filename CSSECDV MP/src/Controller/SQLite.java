@@ -752,7 +752,7 @@ public class SQLite {
     }
     
     public ArrayList<Product> getProducts(){
-        String sql = "SELECT id, name, stock, price FROM product";
+        String sql = "SELECT id, name, stock, price FROM product ORDER BY name";
         ArrayList<Product> products = new ArrayList<Product>();
 
         try (Connection conn = DriverManager.getConnection(driverURL);
@@ -845,7 +845,7 @@ public class SQLite {
     }
     
     public ArrayList<User> getUsers(){
-        String sql = "SELECT id, username, password, role, failed_attempts, locked FROM users";
+        String sql = "SELECT id, username, password, role, failed_attempts, locked FROM users ORDER BY role, username";
         ArrayList<User> users = new ArrayList<User>();
         
         try (Connection conn = DriverManager.getConnection(driverURL);
