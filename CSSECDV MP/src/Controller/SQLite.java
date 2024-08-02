@@ -12,8 +12,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.TimeZone;
 
@@ -65,7 +65,7 @@ public class SQLite {
             stmt.execute(sql);
             System.out.println("Table logs in database.db created.");
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
     }
      
@@ -92,18 +92,53 @@ public class SQLite {
             + " username TEXT NOT NULL UNIQUE,\n"
             + " password TEXT NOT NULL,\n"
             + " role INTEGER DEFAULT 2,\n"
-            + " locked INTEGER DEFAULT 0\n"
+            + " failed_attempts INTEGER DEFAULT 0, \n"
+            + " locked INTEGER DEFAULT 0,\n"
+            + " session_key TEXT\n"
             + ");";
 
         try (Connection conn = DriverManager.getConnection(driverURL);
             Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
             System.out.println("Table users in database.db created.");
+            
         } catch (Exception ex) {
             System.out.print(ex);
         }
     }
     
+    public void createSessionsTable() {
+        String sql = "CREATE TABLE IF NOT EXISTS sessions (\n"
+            + " id TEXT NOT NULL,\n"
+            + " value TEXT NOT NULL,\n"
+            + " created_at TEXT NOT NULL,\n"
+            + " last_accessed TEXT NOT NULL\n"
+            + ");";
+
+        try (Connection conn = DriverManager.getConnection(driverURL);
+            Statement stmt = conn.createStatement()) {
+            stmt.execute(sql);
+            System.out.println("Table sessions in database.db created.");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void deleteProduct(String productName){
+        String sql = "DELETE FROM product WHERE name = ?";
+
+        try (Connection conn = DriverManager.getConnection(driverURL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            pstmt.setString(1, productName);
+            pstmt.executeUpdate();
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+
+    };
+
     public void dropHistoryTable() {
         String sql = "DROP TABLE IF EXISTS history;";
 
@@ -111,18 +146,6 @@ public class SQLite {
             Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
             System.out.println("Table history in database.db dropped.");
-        } catch (Exception ex) {
-            System.out.print(ex);
-        }
-    }
-    
-    public void dropLogsTable() {
-        String sql = "DROP TABLE IF EXISTS logs;";
-
-        try (Connection conn = DriverManager.getConnection(driverURL);
-            Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
-            System.out.println("Table logs in database.db dropped.");
         } catch (Exception ex) {
             System.out.print(ex);
         }
@@ -151,6 +174,7 @@ public class SQLite {
             System.out.print(ex);
         }
     }
+    
     
     public void addHistory(String username, String name, int stock, String timestamp) {
         String sql = "INSERT INTO history(username,name,stock,timestamp) VALUES(?,?,?,?)";
@@ -181,9 +205,46 @@ public class SQLite {
             pstmt.setString(4, timestamp);
 
             pstmt.executeUpdate();
+            
+            this.addLogScreen(event, username, desc, timestamp);
+            
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
+        }  
+    }
+    
+    private void createLogsScreenTable() throws Exception{
+        String sql = "CREATE TABLE IF NOT EXISTS logs_screen (\n"
+            + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+            + " event TEXT NOT NULL,\n"
+            + " username TEXT NOT NULL,\n"
+            + " desc TEXT NOT NULL,\n"
+            + " timestamp TEXT NOT NULL\n"
+            + ");";
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.executeUpdate();
+    } 
+    
+    private void addLogScreen(String event, String username, String desc, String timestamp) {
+        try{
+            this.createLogsScreenTable();
+            
+            String sql = "INSERT INTO logs_screen(event,username,desc,timestamp) VALUES(?, ?, ?, ?)";
+            Connection conn = DriverManager.getConnection(driverURL);
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            
+            pstmt.setString(1, event);
+            pstmt.setString(2, username);
+            pstmt.setString(3, desc);
+            pstmt.setString(4, timestamp);
+
+            pstmt.executeUpdate();
+        } catch(Exception e){
+            e.printStackTrace();
         }
+       
     }
     
     public void addProduct(String name, int stock, double price) {
@@ -197,6 +258,8 @@ public class SQLite {
             pstmt.setDouble(3, price);
             
             pstmt.executeUpdate();
+            
+            
         } catch (Exception ex) {
             System.out.print(ex);
         }
@@ -216,6 +279,224 @@ public class SQLite {
         }
     }
     
+    public void addSessionKeyToUser(String username, String key) throws Exception {
+        Connection conn = DriverManager.getConnection(driverURL);
+        String sql = "UPDATE users SET session_key = ? WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        
+        pstmt.setString(1, key);
+        pstmt.setString(2, username);
+
+        pstmt.executeUpdate();
+        
+        conn.close();
+        
+    }
+    
+    public String getSessionKeyUsingName(String username) throws Exception {
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        
+        String sql = "SELECT session_key FROM users WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, username);
+
+
+        ResultSet rs = pstmt.executeQuery();
+        
+        if(rs.next()){
+            String key = rs.getString(1);
+            conn.close();
+            return key;
+        }
+       
+        return "";
+    
+    }
+    
+    public String getSessionKeyUsingID(String id) throws Exception {
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        
+        String sql = "SELECT users.session_key "
+                + "FROM users "
+                + "INNER JOIN session_user_bridge ON users.id=session_user_bridge.user_id "
+                + "WHERE session_user_bridge.session_id = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, id);
+
+
+        ResultSet rs = pstmt.executeQuery();
+        
+        if(rs.next()){
+            String key = rs.getString(1);
+            conn.close();
+            return key;
+        }
+       
+        return "";
+    
+    }
+    
+    public int getUserRole(String username) throws Exception {
+        Connection conn = DriverManager.getConnection(driverURL);
+        
+        String sql = "SELECT role FROM users WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, username);
+
+
+        ResultSet rs = pstmt.executeQuery();
+        
+        if(rs.next()){
+            int role = rs.getInt(1);
+            conn.close();
+            return role;
+        }
+       
+        throw new Exception("No role found.");
+    }
+    
+    public String addSession(String username, String session, PasswordHasher hasher) throws Exception {
+        
+        //create an ID
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        sdf.setTimeZone(TimeZone.getDefault()); 
+        String date = sdf.format(new Date());
+        String id = hasher.hash(date, "SHA-256");
+        
+        String sql = "INSERT INTO sessions(id, value, created_at, last_accessed) VALUES(?, ?, ?, ?)";
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, id);
+        pstmt.setString(2, session);
+        pstmt.setString(3, date); 
+        pstmt.setString(4, date); 
+        pstmt.executeUpdate();
+        
+        conn.close();
+        
+        int userID = this.getUserID(username);
+        this.linkUserToSession(userID, id);
+        
+        return id;
+    }
+    
+    private int getUserID(String username) throws Exception {
+        Connection conn = DriverManager.getConnection(driverURL);
+        
+        String sql = "SELECT id FROM users WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, username);
+
+
+        ResultSet rs = pstmt.executeQuery();
+        
+        if(rs.next()){
+            int value = rs.getInt(1);
+            conn.close();
+            return value;
+        }
+       
+        throw new Exception("No id found.");
+    } 
+    
+    private void linkUserToSession(int id, String session) throws Exception{
+        
+        String sql = "INSERT INTO session_user_bridge(session_id, user_id) VALUES(?, ?)";
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, session);
+        pstmt.setInt(2, id);
+ 
+        pstmt.executeUpdate();
+        
+        conn.close();
+        
+    }
+    
+    public String getSession(String id) throws Exception{
+        Connection conn = DriverManager.getConnection(driverURL);
+        
+        String sql = "SELECT value FROM sessions WHERE id = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, id);
+
+
+        ResultSet rs = pstmt.executeQuery();
+        
+        if(rs.next()){
+            String value = rs.getString(1);
+            conn.close();
+            return value;
+        }
+       
+        throw new Exception("No value found.");
+    }
+    
+    
+    public void updateSessionAccess(String id) throws Exception {
+        Connection conn = DriverManager.getConnection(driverURL);
+        String sql = "SELECT num_accesses FROM sessions WHERE id = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, id);
+        
+        
+        ResultSet rs = pstmt.executeQuery();
+            
+        if(rs.next()){
+            
+            int accesses = rs.getInt(1) + 1;
+            sql = "UPDATE sessions SET last_accessed = ?, num_accesses = ? WHERE id = ?";
+            pstmt = conn.prepareStatement(sql);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            sdf.setTimeZone(TimeZone.getDefault()); 
+            String date = sdf.format(new Date());
+
+            pstmt.setString(1, date);
+            pstmt.setInt(2, accesses);
+            pstmt.setString(3, id);
+
+
+            pstmt.executeUpdate();
+            conn.close();
+            
+        }
+    }
+    
+     
+    
+    private void removeLinkToSession(String id) throws Exception {
+        String sql = "DELETE FROM session_user_bridge WHERE session_id=(?)";
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        
+        pstmt.setString(1, id);
+            
+        pstmt.executeUpdate();
+        conn.close();
+    }
+    
+    public void removeSession(String id) throws Exception {
+        
+        this.removeLinkToSession(id);
+        
+        String sql = "DELETE FROM sessions WHERE id=(?)";
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        
+        pstmt.setString(1, id);
+            
+        pstmt.executeUpdate();
+        conn.close();
+        
+    }
+    
     public boolean usernameExist(String username){
         String sql = "SELECT username FROM users WHERE LOWER(username) = LOWER(?)";
         
@@ -232,7 +513,7 @@ public class SQLite {
             }
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return false;
@@ -254,7 +535,7 @@ public class SQLite {
             }
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return false;
@@ -285,7 +566,9 @@ public class SQLite {
                 
                 if(failed >= max){
                     conn.close();
-                    this.lockUser(username);
+                    if(this.isUserUnlocked(username)){
+                        this.lockUser(username);
+                    }
                 }
                     
                 
@@ -293,133 +576,109 @@ public class SQLite {
             }
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return -1;
     }
     
     public boolean isUserUnlocked(String username){
-        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = ?)";
+        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = ? AND role != ?)";
         try (Connection conn = DriverManager.getConnection(driverURL);
                 PreparedStatement pstmt = conn.prepareStatement(sql)){
             
             pstmt.setString(1, username);
             pstmt.setInt(2, 0);
+            pstmt.setInt(3, 1);
+            
             ResultSet rs = pstmt.executeQuery();
+            
             
             if(rs.next()){
 //                System.out.println("User: " + rs.getString("username") + " exist.");
                 return rs.getBoolean(1);
             }
+            
+            
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
         
         return false;
     }
     
-//    public boolean tryUnlock(String username){
-//        try (Connection conn = DriverManager.getConnection(driverURL)){
-//            
-//            String sql = "SELECT lockout_time FROM users WHERE username = ?";
-//            PreparedStatement pstmt = conn.prepareStatement(sql);
-//            pstmt.setString(1, username);
-//         
-//            
-//            ResultSet rs = pstmt.executeQuery();
-//            
-//            if(rs.next()){
-//                
-//                String retrievedDateString = rs.getString("lockout_time");
-//                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//                sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
-//                
-//                Date retrievedDate = sdf.parse(retrievedDateString);
-//                Date now = new Date();
-//
-//                //if date now is before timeout date, return false (failed attempt)
-//                if (now.before(retrievedDate))
-//                    return false;
-//  
-//                //else now is equal or after timout date, unlock user
-//                else {
-//                    
-////                  unlock user
-//                    sql = "UPDATE users SET locked = ?, lockout_time = ? WHERE username = ?";
-//                    pstmt = conn.prepareStatement(sql);
-//                    pstmt.setInt(1, 0);
-//                    pstmt.setNull(2, java.sql.Types.VARCHAR);
-//                    pstmt.setString(3, username);
-//                    
-//                    pstmt.executeUpdate();
-//              
-//                    return true;
-//                }
-//
-//            }
-//
-//        } catch (Exception ex) {
-//            System.out.print(ex);
-//        }
-//        
-//        return false;
-//    }
+    public void lockUser(String username) throws Exception {
+  
+        Connection conn = DriverManager.getConnection(driverURL);
+        String sql = "UPDATE users SET locked = ?, role = ? WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+
+        Random random = new Random();
+        pstmt.setInt(1, random.nextInt(1, Integer.MAX_VALUE));
+        pstmt.setInt(2, 1);
+        pstmt.setString(3, username);
+
+        pstmt.executeUpdate();
+
+    }
     
-    public void lockUser(String username){
+    public void unlockUser(String username) throws Exception {
+        Connection conn = DriverManager.getConnection(driverURL);
+        String sql = "UPDATE users SET locked = ? WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+
+        pstmt.setInt(1, 0);
+        pstmt.setString(2, username);
+
+        pstmt.executeUpdate();
+    }
+    
+    public void changeUserRole(String username, char role) throws Exception {
         
-      
-        // to lock user, store lockout time + 15 minutes
-        try (Connection conn = DriverManager.getConnection(driverURL)){
+        Connection conn = DriverManager.getConnection(driverURL);
+        String sql = "UPDATE users SET role = ? WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+
+        pstmt.setInt(1, Integer.parseInt(String.valueOf(role)));
+        pstmt.setString(2, username);
+
+        pstmt.executeUpdate();
+        
+    }
+    
+    public void changeUserPassword(String username, String password) throws Exception{
+        Connection conn = DriverManager.getConnection(driverURL);
+        String sql = "UPDATE users SET password = ? WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+
+        pstmt.setString(1, password);
+        pstmt.setString(2, username);
+
+        pstmt.executeUpdate();
+    }
+    
+    
+    public String getAccessRole(int role){
+        String sql = "SELECT access from access_roles WHERE code = ?";
+        try (Connection conn = DriverManager.getConnection(driverURL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
             
-            String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE username = ? AND locked = ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, username);
-            pstmt.setInt(2, 0);
-         
+            pstmt.setInt(1, role);
             ResultSet rs = pstmt.executeQuery();
             
             if(rs.next()){
-                
-                if(rs.getBoolean(1)){
-                    
-                    sql = "UPDATE users SET locked = ? WHERE username = ?";
-                    pstmt = conn.prepareStatement(sql);
-  
-                    Random random = new Random();
-                    pstmt.setInt(1, random.nextInt(1, Integer.MAX_VALUE));
-                    pstmt.setString(2, username);
-
-                    pstmt.executeUpdate();
-                }
+//                System.out.println("User: " + rs.getString("username") + " exist.");
+                return rs.getString(1);
             }
-            
-            
-//            // Step 1: Get the current date and time
-//            Calendar calendar = Calendar.getInstance();
-//
-//            // Step 2: Add 15 minutes to the current time
-//            calendar.add(Calendar.MINUTE, time);
-//            Date futureDate = calendar.getTime();
-//
-//            // Step 3: Format the future date and time
-//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//            sdf.setTimeZone(TimeZone.getDefault()); // Use the current time zone
-//            String formattedDate = sdf.format(futureDate);
-//            
-//            
-//            String sql = "UPDATE users SET lockout_time = ? WHERE username = ?";
-//            PreparedStatement pstmt = conn.prepareStatement(sql);
-//            pstmt.setString(1, formattedDate);
-//            pstmt.setString(2, username);
-//            
-//            pstmt.executeUpdate();
 
         } catch (Exception ex) {
-            System.out.print(ex);
+            ex.printStackTrace();
         }
+        
+        return "";
     }
+    
     
     public ArrayList<History> getHistory(){
         String sql = "SELECT id, username, name, stock, timestamp FROM history";
@@ -442,13 +701,40 @@ public class SQLite {
         return histories;
     }
     
-    public ArrayList<Logs> getLogs(){
-        String sql = "SELECT id, event, username, desc, timestamp FROM logs";
-        ArrayList<Logs> logs = new ArrayList<Logs>();
+    public ArrayList<History> getHistory(String username){
+        String sql = "SELECT id, username, name, stock, timestamp FROM history"
+                + " WHERE username = LOWER(?)";
+        ArrayList<History> histories = new ArrayList<History>();
         
         try (Connection conn = DriverManager.getConnection(driverURL);
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+            
+            pstmt.setString(1, username);
+            
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                histories.add(new History(rs.getInt("id"),
+                                   rs.getString("username"),
+                                   rs.getString("name"),
+                                   rs.getInt("stock"),
+                                   rs.getString("timestamp")));
+            }
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        return histories;
+    }
+    
+    public ArrayList<Logs> getLogs(){
+        
+        ArrayList<Logs> logs = new ArrayList<Logs>();
+        try{
+            String sql = "SELECT id, event, username, desc, timestamp FROM logs_screen";
+            
+            Connection conn = DriverManager.getConnection(driverURL);
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)){
+            
+            ResultSet rs = stmt.executeQuery(sql);
             
             while (rs.next()) {
                 logs.add(new Logs(rs.getInt("id"),
@@ -457,10 +743,85 @@ public class SQLite {
                                    rs.getString("desc"),
                                    rs.getString("timestamp")));
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            
+        }catch(Exception e){
+            e.printStackTrace();
         }
+        
         return logs;
+    }
+    
+    public ArrayList<Product> getProducts(){
+        String sql = "SELECT id, name, stock, price FROM product ORDER BY name";
+        ArrayList<Product> products = new ArrayList<Product>();
+
+        try (Connection conn = DriverManager.getConnection(driverURL);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)){
+
+            while (rs.next()) {
+                products.add(new Product(rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getInt("stock"),
+                        rs.getFloat("price")));
+            }
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+        return products;
+    }
+
+    public void dropLogs() throws Exception {
+        String sql = "DROP TABLE IF EXISTS logs_screen;";
+        
+        Connection conn = DriverManager.getConnection(driverURL);
+        Statement stmt = conn.createStatement();
+        stmt.execute(sql);
+//        System.out.println("Table logs_screen in database.db dropped.");
+        conn.close();
+    }
+    
+   
+    
+    public void reflectLogs(){
+        
+        try{
+            this.dropLogs();
+            this.createLogsScreenTable();
+//            System.out.println("Table logs_screen in database.db created.");
+            
+            String sql = "SELECT id, event, username, desc, timestamp FROM logs";
+            Connection conn = DriverManager.getConnection(driverURL);
+            Statement stmt = conn.createStatement();
+            
+            ResultSet rs = stmt.executeQuery(sql);
+            
+            
+            ArrayList<Logs> logs = new ArrayList(); 
+            
+            while (rs.next()) {
+                logs.add(new Logs(
+                        rs.getInt("id"),
+                        rs.getString("event"), 
+                        rs.getString("username"), 
+                        rs.getString("desc"), 
+                        rs.getString("timestamp")
+                ));
+            }
+            
+            conn.close();
+            
+            for(Logs log: logs){
+                this.addLogScreen(log.getEvent(), 
+                        log.getUsername(), 
+                        log.getDesc(), 
+                        log.getTimestampString());
+            }
+            
+            
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
     
     public ArrayList<Product> getProduct(){
@@ -484,7 +845,7 @@ public class SQLite {
     }
     
     public ArrayList<User> getUsers(){
-        String sql = "SELECT id, username, password, role, locked FROM users";
+        String sql = "SELECT id, username, password, role, failed_attempts, locked FROM users ORDER BY role, username";
         ArrayList<User> users = new ArrayList<User>();
         
         try (Connection conn = DriverManager.getConnection(driverURL);
@@ -496,55 +857,95 @@ public class SQLite {
                                    rs.getString("username"),
                                    rs.getString("password"),
                                    rs.getInt("role"),
+                                   rs.getInt("failed_attempts"),
                                    rs.getInt("locked")));
+//                System.out.println("Attempts: " + users.getLast().getFailed_attempts());
             }
         } catch (Exception ex) {}
         return users;
     }
     
-    public void addUser(String username, String password, int role) {
+    public void addUser(String username, String password, int role) throws Exception {
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
         
-        try (Connection conn = DriverManager.getConnection(driverURL);
-            PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-            pstmt.setInt(3, role); 
-            pstmt.executeUpdate();
-            
-        } catch (Exception ex) {
-            System.out.print(ex);
-        }
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, username);
+        pstmt.setString(2, password);
+        pstmt.setInt(3, role); 
+        pstmt.executeUpdate();
+        
+        conn.close();
+       
     }
     
-    public void removeUser(String username) {
+    public void removeUser(String username) throws Exception {
         String sql = "DELETE FROM users WHERE username=(?)";
         
-        try (Connection conn = DriverManager.getConnection(driverURL);
-            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        Connection conn = DriverManager.getConnection(driverURL);
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        
+        pstmt.setString(1, username);
             
-            pstmt.setString(1, username);
-            
-            pstmt.executeUpdate();
-            System.out.println("User " + username + " has been deleted.");
-        } catch (Exception ex) {
-            System.out.print(ex);
-        }
+        pstmt.executeUpdate();
+        System.out.println("User " + username + " has been deleted.");
     }
     
     public Product getProduct(String name){
-        String sql = "SELECT name, stock, price FROM product WHERE name='" + name + "';";
+        String sql = "SELECT name, stock, price FROM product WHERE name=?;";
+        
         Product product = null;
         try (Connection conn = DriverManager.getConnection(driverURL);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)){
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ){
+            
+            pstmt.setString(1, name);
+            
+            ResultSet rs = pstmt.executeQuery();
             product = new Product(rs.getString("name"),
                                    rs.getInt("stock"),
                                    rs.getFloat("price"));
         } catch (Exception ex) {
             System.out.print(ex);
         }
+
         return product;
     }
+
+    public void updateProduct(String productName, int purchasedAmt){
+        String sql = "UPDATE product SET stock = stock - ? WHERE name = ?";
+
+        try (Connection conn = DriverManager.getConnection(driverURL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            pstmt.setInt(1, purchasedAmt);
+            pstmt.setString(2, productName);
+            pstmt.executeUpdate();
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+
+    }
+
+    public void updateProduct(String oldProductName, String newProductName, int stock, float price){
+        String sql = "UPDATE product " +
+                        "SET name = ?, " +
+                            "stock = ?, " +
+                            "price = ? " +
+                        "WHERE name = ?";
+
+        try (Connection conn = DriverManager.getConnection(driverURL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1, newProductName);
+            pstmt.setInt(2, stock);
+            pstmt.setFloat(3, price);
+            pstmt.setString(4, oldProductName);
+            pstmt.executeUpdate();
+
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+    }
+
 }

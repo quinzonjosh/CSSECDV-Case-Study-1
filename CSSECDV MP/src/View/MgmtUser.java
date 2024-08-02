@@ -5,13 +5,19 @@
  */
 package View;
 
+import Controller.PasswordHasher;
+import Controller.PasswordValidator;
 import Controller.SQLite;
+import Controller.SessionManager;
+import CustomExceptions.PasswordException;
+import Model.Session;
 import Model.User;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.TimeZone;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
@@ -24,11 +30,15 @@ public class MgmtUser extends javax.swing.JPanel {
 
     public SQLite sqlite;
     public DefaultTableModel tableModel;
+    private final PasswordValidator validator = new PasswordValidator();
+    private final PasswordHasher hasher = new PasswordHasher();
+    private String session = "";
+    private Session currentSession;
     
     public MgmtUser(SQLite sqlite) {
         initComponents();
         this.sqlite = sqlite;
-        tableModel = (DefaultTableModel)table.getModel();
+        tableModel = (DefaultTableModel) table.getModel();
         table.getTableHeader().setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 14));
         
 //        UNCOMMENT TO DISABLE BUTTONS
@@ -38,7 +48,9 @@ public class MgmtUser extends javax.swing.JPanel {
 //        chgpassBtn.setVisible(false);
     }
     
-    public void init(){
+    public void init(String session){
+        this.session = session;
+        
         //      CLEAR TABLE
         for(int nCtr = tableModel.getRowCount(); nCtr > 0; nCtr--){
             tableModel.removeRow(0);
@@ -46,12 +58,19 @@ public class MgmtUser extends javax.swing.JPanel {
         
 //      LOAD CONTENTS
         ArrayList<User> users = sqlite.getUsers();
+//        System.out.println("Table Columns: " + tableModel.getColumnCount());
+        
         for(int nCtr = 0; nCtr < users.size(); nCtr++){
+//            System.out.println("Table attempts: " + users.get(nCtr).getFailed_attempts());
+            
             tableModel.addRow(new Object[]{
                 users.get(nCtr).getUsername(), 
                 users.get(nCtr).getPassword(), 
                 users.get(nCtr).getRole(), 
+                users.get(nCtr).getFailed_attempts(),
                 users.get(nCtr).getLocked()});
+            
+            
         }
     }
 
@@ -82,17 +101,17 @@ public class MgmtUser extends javax.swing.JPanel {
         table.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
         table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Username", "Password", "Role", "Locked"
+                "Username", "Password", "Role", "Failed_Attempts", "Locked"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false
+                false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -106,10 +125,10 @@ public class MgmtUser extends javax.swing.JPanel {
             table.getColumnModel().getColumn(0).setPreferredWidth(160);
             table.getColumnModel().getColumn(1).setPreferredWidth(400);
             table.getColumnModel().getColumn(2).setPreferredWidth(100);
-            table.getColumnModel().getColumn(3).setPreferredWidth(100);
+            table.getColumnModel().getColumn(3).setPreferredWidth(200);
+            table.getColumnModel().getColumn(4).setPreferredWidth(100);
         }
 
-        editRoleBtn.setBackground(new java.awt.Color(255, 255, 255));
         editRoleBtn.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         editRoleBtn.setText("EDIT ROLE");
         editRoleBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -118,7 +137,6 @@ public class MgmtUser extends javax.swing.JPanel {
             }
         });
 
-        deleteBtn.setBackground(new java.awt.Color(255, 255, 255));
         deleteBtn.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         deleteBtn.setText("DELETE");
         deleteBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -127,7 +145,6 @@ public class MgmtUser extends javax.swing.JPanel {
             }
         });
 
-        lockBtn.setBackground(new java.awt.Color(255, 255, 255));
         lockBtn.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         lockBtn.setText("LOCK/UNLOCK");
         lockBtn.setToolTipText("");
@@ -137,7 +154,6 @@ public class MgmtUser extends javax.swing.JPanel {
             }
         });
 
-        chgpassBtn.setBackground(new java.awt.Color(255, 255, 255));
         chgpassBtn.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         chgpassBtn.setText("CHANGE PASS");
         chgpassBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -178,6 +194,44 @@ public class MgmtUser extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private boolean verifyUser(){
+        try{
+            Session current = SessionManager.checkSession(this.sqlite, this.session);
+            this.currentSession = current;
+            JPasswordField password = new JPasswordField();
+            designer(password, "PASSWORD");
+            
+            Object[] message = {
+                "Enter Your Own Password:", password
+            };
+
+            int result = JOptionPane.showConfirmDialog(null, message, "ENTER PASSWORD", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
+            if(result == JOptionPane.OK_OPTION){
+                String username = current.getUsername();
+                String passText = new String(password.getPassword());
+                try {
+                    String hashedPassword = hasher.hash(hasher.hash(passText, "SHA-1"), "SHA-256");
+                    if(this.sqlite.isLoginSuccessful(username, hashedPassword)){
+                        this.logAction("VERIFY_PASSWORD", this.currentSession.getUsername(), String.format("[SUCCESS] Password Verficiation of User %s OK", username));
+                        return true;
+                    }
+                    else throw new Exception("Wrong Password!");
+                } catch (Exception ex){
+                    this.logAction("VERIFY_PASSWORD",  this.currentSession.getUsername(), String.format("[FAIL] Password Verficiation of User %s failed due to %s", username, ex.getMessage()));
+                    JOptionPane.showMessageDialog(this, String.format("Wrong Password!"), "Verification Failed", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                    return false;
+                }
+            }
+            
+        } catch(Exception e){
+            e.printStackTrace();
+            this.logAction("VERIFY_PASSWORD",  this.currentSession.getUsername(), String.format("[FAIL] Server Failure due to %s", e));
+        }
+        
+        return false;
+    }
+    
     private void editRoleBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editRoleBtnActionPerformed
         if(table.getSelectedRow() >= 0){
             String[] options = {"1-DISABLED","2-CLIENT","3-STAFF","4-MANAGER","5-ADMIN"};
@@ -189,8 +243,26 @@ public class MgmtUser extends javax.swing.JPanel {
                 "EDIT USER ROLE", JOptionPane.QUESTION_MESSAGE, null, options, options[(int)tableModel.getValueAt(table.getSelectedRow(), 2) - 1]);
             
             if(result != null){
-                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
-                System.out.println(result.charAt(0));
+                
+                if(this.verifyUser()){
+                    String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
+    //                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
+
+                    char role = result.charAt(0);
+    //                System.out.println(result.charAt(0));
+
+                    try {
+                        this.sqlite.changeUserRole(username, role);
+                        JOptionPane.showMessageDialog(this, String.format("User %s changed to role = %s", username, result), "Edit Role Successful", JOptionPane.INFORMATION_MESSAGE);
+                        this.logAction("CHANGE_ROLE", currentSession.getUsername(), String.format("[SUCCESS] Role of User %s changed to role = %c", username, role));
+                        this.init(this.session);  
+                    }
+                    catch(Exception e){
+                        System.out.println(e);
+                        JOptionPane.showMessageDialog(this, String.format("User %s attempt to change role to %s has failed.", username, result), "Edit Role Failed", JOptionPane.ERROR_MESSAGE);
+                        this.logAction("CHANGE_ROLE", currentSession.getUsername(), String.format("[FAIL] Failure on changing user role (selected = %c)", role));
+                    }
+                }
             }
         }
     }//GEN-LAST:event_editRoleBtnActionPerformed
@@ -200,30 +272,85 @@ public class MgmtUser extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete " + tableModel.getValueAt(table.getSelectedRow(), 0) + "?", "DELETE USER", JOptionPane.YES_NO_OPTION);
             
             if (result == JOptionPane.YES_OPTION) {
-                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
+                
+                if(this.verifyUser()){
+                    String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
+                    System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
+
+                     try {
+
+                         this.sqlite.removeUser(username);
+                         JOptionPane.showMessageDialog(this, String.format("Attempt to delete user %s is successful.", username), "Delete User Successful", JOptionPane.PLAIN_MESSAGE);
+                         this.logAction("REMOVE_USER", currentSession.getUsername(), String.format("[SUCCESS] Successful on deleting user %s ", username));
+                         this.init(this.session);
+
+                     } catch(Exception e){
+                         System.out.println(e);
+                         JOptionPane.showMessageDialog(this, String.format("Attempt to delete user %s has failed.", username), "Delete User Failed", JOptionPane.ERROR_MESSAGE);
+                         this.logAction("REMOVE_USER", currentSession.getUsername(), String.format("[FAIL] Failure on deleting user %s ", username));
+                     }
+                }
             }
         }
     }//GEN-LAST:event_deleteBtnActionPerformed
 
     private void lockBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lockBtnActionPerformed
+        
         if(table.getSelectedRow() >= 0){
             String state = "lock";
-            if("1".equals(tableModel.getValueAt(table.getSelectedRow(), 3) + "")){
+            System.out.println(tableModel.getColumnName(3) + ": " + 
+                   tableModel.getValueAt(table.getSelectedRow(), 3) + "");
+            
+            String locked = tableModel.getValueAt(table.getSelectedRow(), 4) + "";
+            if(!locked.equals("0")){
                 state = "unlock";
             }
-            
-            int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to " + state + " " + tableModel.getValueAt(table.getSelectedRow(), 0) + "?", "DELETE USER", JOptionPane.YES_NO_OPTION);
-            
+           
+            int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to " + state + " " + tableModel.getValueAt(table.getSelectedRow(), 0) + "?", String.format("%s USER", state.toUpperCase()), JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
+                
+                if(this.verifyUser()){
+                    
+                    String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
+                    System.out.println(username);
+
+                    if(state.equals("lock")){
+                        try {
+                            this.sqlite.lockUser(username);
+                            JOptionPane.showMessageDialog(this, String.format("User %s has been locked.", username), "Locking Successful", JOptionPane.INFORMATION_MESSAGE);
+                            this.logAction("CHANGE_TO_LOCK", currentSession.getUsername(), String.format("[SUCCESS] Locking user %s successful", username));
+                            this.init(this.session);
+
+                        } catch (Exception e){
+                            System.out.println(e);
+                            JOptionPane.showMessageDialog(this, String.format("Attempt to lock user %s has failed.", username), "Locking Failed", JOptionPane.ERROR_MESSAGE);
+                            this.logAction("CHANGE_TO_LOCK", currentSession.getUsername(), String.format("[FAIL] Locking user %s failed.", username));
+                        }
+                    }
+                    else {
+                        try {
+                            this.sqlite.unlockUser(username);
+                            JOptionPane.showMessageDialog(this, String.format("User %s has been unlocked.", username), "Unlocking Successful", JOptionPane.INFORMATION_MESSAGE);
+                            this.logAction("CHANGE_TO_UNLOCK", currentSession.getUsername(), String.format("[SUCCESS] Unlocking user %s successful", username));
+                            this.init(this.session);
+
+                        } catch (Exception e){
+                            System.out.println(e);
+                            JOptionPane.showMessageDialog(this, String.format("Attempt to unlock user %s has failed.", username), "Unlocking Failed", JOptionPane.ERROR_MESSAGE);
+                            this.logAction("CHANGE_TO_UNLOCK", currentSession.getUsername(), String.format("[FAIL] Unlocking user %s failed.", username));
+                        }
+                    }
+                }
             }
         }
+        
+        
     }//GEN-LAST:event_lockBtnActionPerformed
 
     private void chgpassBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chgpassBtnActionPerformed
         if(table.getSelectedRow() >= 0){
-            JTextField password = new JPasswordField();
-            JTextField confpass = new JPasswordField();
+            JPasswordField password = new JPasswordField();
+            JPasswordField confpass = new JPasswordField();
             designer(password, "PASSWORD");
             designer(confpass, "CONFIRM PASSWORD");
             
@@ -234,12 +361,65 @@ public class MgmtUser extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, message, "CHANGE PASSWORD", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
             
             if (result == JOptionPane.OK_OPTION) {
-                System.out.println(password.getText());
-                System.out.println(confpass.getText());
+                
+                String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
+                String passText = new String(password.getPassword());
+                String confText = new String(confpass.getPassword());
+
+                System.out.println(confpass.getPassword());
+                System.out.println(password.getPassword());
+
+                if(!hasEmptyFields(passText, confText)){
+                    password.setText("");
+                    confpass.setText("");
+
+                    try {
+                        if(validator.isValidPassword(passText, confText)){
+                            if(this.verifyUser()){
+                                String hashedPassword = validator.passwordPwndCheck(passText);
+                                String finalHashedPassword = hasher.hash(hashedPassword, "SHA-256");
+
+                                this.sqlite.changeUserPassword(username, finalHashedPassword);
+                                JOptionPane.showMessageDialog(this, String.format("User %s's password has been changed.", username), "Change Password Successful", JOptionPane.PLAIN_MESSAGE);
+                                this.logAction("CHANGE_PASS", currentSession.getUsername(), String.format("[SUCCESS] Change password of user %s successful.", username));
+                                this.init(this.session);
+                            }
+                        }
+                    } catch (PasswordException e){
+                        e.setHeader("Change Password Failed");
+                        JOptionPane.showMessageDialog(this, e.getMessage(), e.getHeader(), JOptionPane.ERROR_MESSAGE);  
+                        this.logAction("CHANGE_PASS", currentSession.getUsername(), String.format("[FAIL] Input failure on user %s: %s", username, e.getMessage()));
+
+                    } catch(Exception e){
+                        System.out.println(e);
+                        JOptionPane.showMessageDialog(this, String.format("Attempt to change password of user %s has failed.", username), "Change Password Failed", JOptionPane.ERROR_MESSAGE);
+                        this.logAction("CHANGE_PASS", currentSession.getUsername(), String.format("[FAIL] Change password of user %s failed.", username));
+
+                    }
+                }
+                
+                
             }
         }
     }//GEN-LAST:event_chgpassBtnActionPerformed
 
+    private boolean hasEmptyFields(String password, String confirmPassword){
+        if(password.isEmpty() || confirmPassword.isEmpty()){
+            JOptionPane.showMessageDialog(this, "Please complete the change password form.", "Change Password Failed", JOptionPane.ERROR_MESSAGE);
+            return true;
+        } 
+        return false;
+    }
+    
+    
+    private void logAction(String event, String username, String desc){
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        sdf.setTimeZone(TimeZone.getDefault()); 
+        String date = sdf.format(new Date());
+        
+        this.sqlite.addLogs(event, username, desc, date);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chgpassBtn;

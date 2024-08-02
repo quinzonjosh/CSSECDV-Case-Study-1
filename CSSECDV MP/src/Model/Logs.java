@@ -21,6 +21,7 @@ public class Logs {
     private String event;
     private String username;
     private String desc;
+    private String timestampString;
     private Timestamp timestamp;
 
     private SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
@@ -47,6 +48,7 @@ public class Logs {
         try {
             dateformat.setTimeZone(TimeZone.getDefault()); // Use the current time zone
             this.timestamp = new Timestamp(dateformat.parse(timestamp).getTime());
+            this.timestampString = timestamp;
         } catch (ParseException ex) {
             ex.printStackTrace();
         }
@@ -91,5 +93,15 @@ public class Logs {
     public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
     }
+
+    public String getTimestampString() {
+        return timestampString;
+    }
+
+    public void setTimestampString(String timestampString) {
+        this.timestampString = timestampString;
+    }
+    
+    
     
 }

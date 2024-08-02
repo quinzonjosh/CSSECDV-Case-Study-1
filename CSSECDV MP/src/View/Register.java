@@ -2,6 +2,8 @@
 package View;
 
 import Controller.PasswordHasher;
+import Controller.PasswordValidator;
+import CustomExceptions.PasswordException;
 import java.util.Arrays;
 import javax.swing.JOptionPane;
 
@@ -9,6 +11,7 @@ public class Register extends javax.swing.JPanel {
     
     
     public Frame frame;
+    private final PasswordValidator validator = new PasswordValidator();
     private final PasswordHasher passwordHasher = new PasswordHasher();
     
     public Register() {
@@ -104,25 +107,41 @@ public class Register extends javax.swing.JPanel {
 
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
         String username = usernameFld.getText();
-        String password = Arrays.toString(passwordFld.getPassword());
-        String confirmPassword = Arrays.toString(confpassFld.getPassword());
+        String password = new String(passwordFld.getPassword());
+        String confirmPassword = new String(confpassFld.getPassword());
         
-        if(!hasEmptyFields(username, password, confirmPassword) && 
-                isValidUsername(username) && 
-                isValidPassword(password, confirmPassword)){   
+        try{
             
-            String hashedPassword = passwordHasher.hash(password, "SHA-1");
+            if(!hasEmptyFields(username, password, confirmPassword)){
+                
+                usernameFld.setText("");
+                passwordFld.setText("");
+                confpassFld.setText("");
+                
+                if(isValidUsername(username) && 
+                validator.isValidPassword(password, confirmPassword)){
+                    
+                    String hashedPassword = validator.passwordPwndCheck(password);
+                    String finalHashedPassword = passwordHasher.hash(hashedPassword, "SHA-256");
 
-            if(frame.isPasswordPwned(hashedPassword)){
-                JOptionPane.showMessageDialog(this, "Password is too common.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
-            } else {
-                String finalHashedPassword = passwordHasher.hash(hashedPassword, "SHA-256");
-                JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
-
-                frame.registerAction(usernameFld.getText(), finalHashedPassword, Arrays.toString(confpassFld.getPassword()));
-                frame.logAction("NOTICE", username, "User creation Successful");
-                frame.loginNav();
+                    frame.registerAction(username, finalHashedPassword, Arrays.toString(confpassFld.getPassword()));
+                   
+                    
+                    JOptionPane.showMessageDialog(this, "New user successfully registered", "Registration Successful", JOptionPane.PLAIN_MESSAGE);
+                    frame.logAction("NOTICE", username, "User creation Successful");
+                    frame.loginNav();
+  
+                }
             }
+      
+            
+        } catch(PasswordException e){
+            e.setHeader("Registration Failed");
+            JOptionPane.showMessageDialog(this, e.getMessage(), e.getHeader(), JOptionPane.ERROR_MESSAGE);
+            
+        } catch(Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Server Error. Please try again later.", "Registration Failed", JOptionPane.ERROR_MESSAGE);   
         }
     }//GEN-LAST:event_registerBtnActionPerformed
     
@@ -157,28 +176,28 @@ public class Register extends javax.swing.JPanel {
         return true;
     }
     
-    private boolean isValidPassword(String password, String confirmPassword){
-        
-        boolean hasUppercase = !password.equals(password.toLowerCase());
-        boolean hasLowercase = !password.equals(password.toUpperCase());
-        boolean hasDigit = password.matches(".*\\d.*");
-        boolean hasSpecialChar = password.matches(".*[!@#$%^&*()-+=<>?/{}~|_.].*");
-        
-        if(password.length() < 8 || password.length() > 64){
-            JOptionPane.showMessageDialog(this, "Password must be 8 - 64 characters long.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        if(!hasUppercase || !hasLowercase || !hasDigit || !hasSpecialChar){
-            JOptionPane.showMessageDialog(this, "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        
-        if(!password.equals(confirmPassword)){
-            JOptionPane.showMessageDialog(this, "Password and Confirm Password do not match.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        return true;
-    }
+//    private boolean isValidPassword(String password, String confirmPassword){
+//        
+//        boolean hasUppercase = !password.equals(password.toLowerCase());
+//        boolean hasLowercase = !password.equals(password.toUpperCase());
+//        boolean hasDigit = password.matches(".*\\d.*");
+//        boolean hasSpecialChar = password.matches(".*[!@#$%^&*()-+=<>?/{}~|_.].*");
+//        
+//        if(password.length() < 8 || password.length() > 64){
+//            JOptionPane.showMessageDialog(this, "Password must be 8 - 64 characters long.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+//            return false;
+//        }
+//        if(!hasUppercase || !hasLowercase || !hasDigit || !hasSpecialChar){
+//            JOptionPane.showMessageDialog(this, "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+//            return false;
+//        }
+//        
+//        if(!password.equals(confirmPassword)){
+//            JOptionPane.showMessageDialog(this, "Password and Confirm Password do not match.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+//            return false;
+//        }
+//        return true;
+//    }
     
     private void backBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backBtnActionPerformed
         frame.loginNav();

@@ -6,14 +6,8 @@
 package View;
 //[255,102,51]
 import Controller.SQLite;
-import Model.History;
-import Model.Logs;
-import Model.Product;
-import Model.User;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.util.ArrayList;
-import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -27,6 +21,7 @@ public class AdminHome extends javax.swing.JPanel {
     public MgmtUser mgmtUser;
     
     private CardLayout contentView = new CardLayout();
+    private String session = "";
     
     public AdminHome() {
         initComponents();
@@ -56,6 +51,9 @@ public class AdminHome extends javax.swing.JPanel {
         contentView.show(Content, panelName);
     }
 
+    public void passSession(String id){
+        this.session = id;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -156,7 +154,7 @@ public class AdminHome extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void usersBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usersBtnActionPerformed
-        mgmtUser.init();
+        mgmtUser.init(this.session);
         usersBtn.setForeground(Color.red);
         productsBtn.setForeground(Color.black);
         historyBtn.setForeground(Color.black);
@@ -165,7 +163,7 @@ public class AdminHome extends javax.swing.JPanel {
     }//GEN-LAST:event_usersBtnActionPerformed
 
     private void productsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productsBtnActionPerformed
-        mgmtProduct.init();
+        mgmtProduct.init(this.session);
         usersBtn.setForeground(Color.black);
         productsBtn.setForeground(Color.red);
         historyBtn.setForeground(Color.black);
@@ -174,7 +172,7 @@ public class AdminHome extends javax.swing.JPanel {
     }//GEN-LAST:event_productsBtnActionPerformed
 
     private void historyBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historyBtnActionPerformed
-        mgmtHistory.init();
+        mgmtHistory.init(this.session);
         usersBtn.setForeground(Color.black);
         productsBtn.setForeground(Color.black);
         historyBtn.setForeground(Color.red);
@@ -183,7 +181,7 @@ public class AdminHome extends javax.swing.JPanel {
     }//GEN-LAST:event_historyBtnActionPerformed
 
     private void logsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logsBtnActionPerformed
-        mgmtLogs.init();
+        mgmtLogs.init(this.session);
         usersBtn.setForeground(Color.black);
         productsBtn.setForeground(Color.black);
         historyBtn.setForeground(Color.black);
