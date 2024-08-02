@@ -228,6 +228,8 @@ public class MgmtProduct extends javax.swing.JPanel {
                                 dateTimeNow);
 
                         JOptionPane.showMessageDialog(null, "Purchase successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+                        loadProducts();
                     }
 
                 } catch (NumberFormatException ex) {
