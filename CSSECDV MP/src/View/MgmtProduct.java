@@ -301,7 +301,7 @@ public class MgmtProduct extends javax.swing.JPanel {
         } else if (name.length() > PRODUCT_NAME_MAX_LENGTH){
             JOptionPane.showMessageDialog(null, "Product name too long.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             return false;
-        } else if (!name.matches("^[a-zA-Z0-9\\\\s\\\\-\\\\._,\\\\'/&\\\\(\\\\)\\\\+:\\\\!\\\\?#]+$")){
+        } else if (!name.matches("^[a-zA-Z0-9\\s\\-\\._,\\'/&\\(\\)\\+:\\!\\?#]+$")) {
             JOptionPane.showMessageDialog(null, "Invalid product name", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             return false;
         } else if (!price.matches("^\\d+(\\.\\d{1,2})?$")) {
