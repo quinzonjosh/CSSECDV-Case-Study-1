@@ -3,13 +3,12 @@ package View;
 
 import Controller.PasswordHasher;
 import CustomExceptions.*;
-import java.util.Arrays;
 import javax.swing.JOptionPane;
 
 public class Login extends javax.swing.JPanel {
 
     public Frame frame;
-    private final PasswordHasher passwordHasher = new PasswordHasher();
+    private final PasswordHasher hasher = new PasswordHasher();
     
     public Login() {
         initComponents();
@@ -95,7 +94,7 @@ public class Login extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     private void loginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginBtnActionPerformed
         String username = usernameFld.getText();
-        String password = Arrays.toString(passwordFld.getPassword());
+        String password = new String(passwordFld.getPassword());
         
         
         if(!hasEmptyFields(username, password)){
@@ -104,14 +103,17 @@ public class Login extends javax.swing.JPanel {
             
             try{
                 
-                //check user name
+//              //check user name
                 checkUsername(username);
                 
                 //check if user is locked
                 verifyIfUserLocked(username);
                 
                 //check if password is correct
-                checkPassword(username, password);
+                checkCredentials(username, password);
+                
+                //create session upon successful login
+                createSession(username);
                 
                 JOptionPane.showMessageDialog(this, "User successfully logged in", "Login Successful", JOptionPane.INFORMATION_MESSAGE);
                 frame.mainNav();
@@ -122,21 +124,39 @@ public class Login extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_loginBtnActionPerformed
 
+    
+    private void createSession(String username) throws AttemptException{
+        
+       try {
+           frame.createUserSession(username);
+           
+                   
+       } catch(Exception e){
+           e.printStackTrace();
+           throw new AttemptException();
+       }
+     
+        
+    }
+    
     private void checkUsername(String username) throws LoginException {
         if(!frame.usernameExist(username))
             throw new LoginException();
     }
     
-    private void checkPassword(String username, String password) throws LoginException {
-        String hashedPassword = passwordHasher.hash(passwordHasher.hash(password, "SHA-1"), "SHA-256");
+    private void checkCredentials(String username, String password) throws LoginException {
+        String hashedPassword = hasher.hash(hasher.hash(password, "SHA-1"), "SHA-256");
         if(!frame.attemptLoginSuccessful(username, hashedPassword))
             throw new LoginException();
     }
     
      private void verifyIfUserLocked(String username) throws AttemptException {
          
-         if(!frame.attemptUnlockSuccessful(username))
+         if(!frame.checkIfUSerLocked(username))
              throw new AttemptException();
+         
+//         if(!frame.attemptUnlockSuccessful(username))
+//             throw new AttemptException();
          
      }
 

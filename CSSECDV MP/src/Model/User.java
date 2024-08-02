@@ -5,6 +5,7 @@ public class User {
     private String username;
     private String password;
     private int role = 2;
+    private int failed_attempts = 0;
     private int locked = 0;
 
     public User(String username, String password){
@@ -12,13 +13,24 @@ public class User {
         this.password = password;
     }
     
-    public User(int id, String username, String password, int role, int locked){
+    public User(int id, String username, String password, int role, int failed_attempts, int locked){
         this.id = id;
         this.username = username;
         this.password = password;
         this.role = role;
+        this.failed_attempts = failed_attempts;
         this.locked = locked;
     }
+
+    public int getFailed_attempts() {
+        return failed_attempts;
+    }
+
+    public void setFailed_attempts(int failed_attempts) {
+        this.failed_attempts = failed_attempts;
+    }
+    
+    
     
     public int getId() {
         return id;

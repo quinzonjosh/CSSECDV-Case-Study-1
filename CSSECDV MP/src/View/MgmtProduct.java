@@ -5,12 +5,21 @@
  */
 package View;
 
+import Controller.PasswordHasher;
 import Controller.SQLite;
+import Controller.SessionManager;
 import Model.Product;
+import Model.Session;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -21,6 +30,8 @@ public class MgmtProduct extends javax.swing.JPanel {
 
     public SQLite sqlite;
     public DefaultTableModel tableModel;
+    private String session = "";
+    private PasswordHasher hasher = new PasswordHasher();
     
     public MgmtProduct(SQLite sqlite) {
         initComponents();
@@ -35,19 +46,26 @@ public class MgmtProduct extends javax.swing.JPanel {
 //        deleteBtn.setVisible(false);
     }
 
-    public void init(){
-        //      CLEAR TABLE
+    public void init(String session){
+        
+        this.session = session;
+        
+        loadProducts();
+    }
+
+    private void loadProducts(){
+//        CLEAR TABLE
         for(int nCtr = tableModel.getRowCount(); nCtr > 0; nCtr--){
             tableModel.removeRow(0);
         }
-        
+
 //      LOAD CONTENTS
-        ArrayList<Product> products = sqlite.getProduct();
+        ArrayList<Product> products = sqlite.getProducts();
         for(int nCtr = 0; nCtr < products.size(); nCtr++){
             tableModel.addRow(new Object[]{
-                products.get(nCtr).getName(), 
-                products.get(nCtr).getStock(), 
-                products.get(nCtr).getPrice()});
+                    products.get(nCtr).getName(),
+                    products.get(nCtr).getStock(),
+                    products.get(nCtr).getPrice()});
         }
     }
     
@@ -185,7 +203,41 @@ public class MgmtProduct extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, message, "PURCHASE PRODUCT", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
             if (result == JOptionPane.OK_OPTION) {
-                System.out.println(stockFld.getText());
+                try {
+                    Session current = SessionManager.checkSession(this.sqlite, this.session);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                    LocalDateTime now = LocalDateTime.now();
+                    String dateTimeNow = now.format(formatter);
+                    Product product = sqlite.getProduct(tableModel.getValueAt(table.getSelectedRow(), 0).toString());
+
+                    if(Integer.parseInt(stockFld.getText()) <= 0) {
+                        JOptionPane.showMessageDialog(null, "Please enter a positive number.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                    } else if(Integer.parseInt(stockFld.getText()) > product.getStock()){
+                        JOptionPane.showMessageDialog(null, "The amount you entered exceeds the available stock.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        sqlite.addHistory(current.getUsername(),
+                                tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                                Integer.parseInt(stockFld.getText()),
+                                dateTimeNow);
+
+                        sqlite.updateProduct(tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                                Integer.parseInt(stockFld.getText()));
+
+                        sqlite.addLogs("PURCHASE", current.getUsername(),
+                                "User purchased " + tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                                dateTimeNow);
+
+                        JOptionPane.showMessageDialog(null, "Purchase successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+                        loadProducts();
+                    }
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Please enter a valid number.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
             }
         }
     }//GEN-LAST:event_purchaseBtnActionPerformed
@@ -206,17 +258,77 @@ public class MgmtProduct extends javax.swing.JPanel {
         int result = JOptionPane.showConfirmDialog(null, message, "ADD PRODUCT", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
         if (result == JOptionPane.OK_OPTION) {
-            System.out.println(nameFld.getText());
-            System.out.println(stockFld.getText());
-            System.out.println(priceFld.getText());
+            try {
+                Session current = SessionManager.checkSession(this.sqlite, this.session);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                LocalDateTime now = LocalDateTime.now();
+                String dateTimeNow = now.format(formatter);
+
+                ArrayList<Product> products = sqlite.getProducts();
+
+                if(isProductValid(nameFld.getText(), stockFld.getText(), priceFld.getText()) && !productNameExists(products, nameFld.getText())){
+                    sqlite.addProduct(nameFld.getText(), Integer.parseInt(stockFld.getText()), Float.parseFloat(priceFld.getText()));
+                    sqlite.addLogs("ADD_PRODUCT", current.getUsername(), "Added new product: " + nameFld.getText(), dateTimeNow);
+
+                    loadProducts();
+
+                    JOptionPane.showMessageDialog(null, "New product added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                }
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Please enter a valid number for stock and price.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_addBtnActionPerformed
+
+    private boolean isProductValid(String name, String stock, String price){
+
+        int STOCK_LIMIT = 10_000;
+        double PRICE_LIMIT = 10_000.00;
+        int PRODUCT_NAME_MAX_LENGTH = 255;
+
+        if (name.isEmpty() || stock.isEmpty() || price.isEmpty()){
+            JOptionPane.showMessageDialog(null, "Please complete the product form", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (Integer.parseInt(stock) < 0 || Float.parseFloat(price) < 0){
+            JOptionPane.showMessageDialog(null, "Stock and price must be non-negative", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (Integer.parseInt(stock) > STOCK_LIMIT || Double.parseDouble(price) > PRICE_LIMIT){
+            JOptionPane.showMessageDialog(null, "Stock/price exceeds the limit.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (name.length() > PRODUCT_NAME_MAX_LENGTH){
+            JOptionPane.showMessageDialog(null, "Product name too long.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (!name.matches("^[a-zA-Z0-9\\s\\-\\._,\\'/&\\(\\)\\+:\\!\\?#]+$")) {
+            JOptionPane.showMessageDialog(null, "Invalid product name", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (!price.matches("^\\d+(\\.\\d{1,2})?$")) {
+            JOptionPane.showMessageDialog(null, "Price must be a valid number with up to 2 decimal places.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean productNameExists(ArrayList<Product> products, String newProductName) {
+        for (Product product : products) {
+            if (product.getName().equalsIgnoreCase(newProductName)) {
+                JOptionPane.showMessageDialog(null, "Product already exist.", "Invalid Product", JOptionPane.ERROR_MESSAGE);
+                return true;
+            }
+        }
+        return false;
+    }
 
     private void editBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBtnActionPerformed
         if(table.getSelectedRow() >= 0){
             JTextField nameFld = new JTextField(tableModel.getValueAt(table.getSelectedRow(), 0) + "");
             JTextField stockFld = new JTextField(tableModel.getValueAt(table.getSelectedRow(), 1) + "");
             JTextField priceFld = new JTextField(tableModel.getValueAt(table.getSelectedRow(), 2) + "");
+
+            String oldProductName = nameFld.getText();
 
             designer(nameFld, "PRODUCT NAME");
             designer(stockFld, "PRODUCT STOCK");
@@ -229,9 +341,33 @@ public class MgmtProduct extends javax.swing.JPanel {
             int result = JOptionPane.showConfirmDialog(null, message, "EDIT PRODUCT", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
             if (result == JOptionPane.OK_OPTION) {
-                System.out.println(nameFld.getText());
-                System.out.println(stockFld.getText());
-                System.out.println(priceFld.getText());
+
+                if(verifyUser()){
+
+                    try {
+                        Session current = SessionManager.checkSession(this.sqlite, this.session);
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                        LocalDateTime now = LocalDateTime.now();
+                        String dateTimeNow = now.format(formatter);
+
+
+                        if(isProductValid(nameFld.getText(), stockFld.getText(), priceFld.getText())){
+                            sqlite.updateProduct(oldProductName, nameFld.getText(), Integer.parseInt(stockFld.getText()), Float.parseFloat(priceFld.getText()));
+                            sqlite.addLogs("EDIT_PRODUCT", current.getUsername(), "Edited product: " + nameFld.getText(), dateTimeNow);
+
+                            loadProducts();
+
+                            JOptionPane.showMessageDialog(null, "Edit product successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        }
+
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(null, "Please enter a valid number for stock and price.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                    } catch (Exception ex) {
+                        Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                }
+
             }
         }
     }//GEN-LAST:event_editBtnActionPerformed
@@ -239,13 +375,96 @@ public class MgmtProduct extends javax.swing.JPanel {
     private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
         if(table.getSelectedRow() >= 0){
             int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete " + tableModel.getValueAt(table.getSelectedRow(), 0) + "?", "DELETE PRODUCT", JOptionPane.YES_NO_OPTION);
-            
+
             if (result == JOptionPane.YES_OPTION) {
-                System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
+
+                if(verifyUser()){
+
+                    try {
+                        Session current = SessionManager.checkSession(this.sqlite, this.session);
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                        LocalDateTime now = LocalDateTime.now();
+                        String dateTimeNow = now.format(formatter);
+
+                        sqlite.deleteProduct(tableModel.getValueAt(table.getSelectedRow(), 0).toString());
+                        sqlite.addLogs("DELETE_PRODUCT", current.getUsername(),
+                                "Deleted Product: " + tableModel.getValueAt(table.getSelectedRow(), 0).toString(),
+                                dateTimeNow);
+
+                        loadProducts();
+                    } catch (Exception ex) {
+                        Logger.getLogger(MgmtHistory.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         }
     }//GEN-LAST:event_deleteBtnActionPerformed
+    
+    private boolean verifyUser(){
+        try{
+            Session current = SessionManager.checkSession(this.sqlite, this.session);
+            JPasswordField password = new JPasswordField();
+            designer(password, "PASSWORD");
 
+            Object[] message = {
+                "Enter Your Own Password:", password
+            };
+
+            int result = JOptionPane.showConfirmDialog(null, message, "ENTER PASSWORD", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
+            if(result == JOptionPane.OK_OPTION){
+                String username = current.getUsername();
+                String passText = new String(password.getPassword());
+                try {
+                    String hashedPassword = hasher.hash(hasher.hash(passText, "SHA-1"), "SHA-256");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                    LocalDateTime now = LocalDateTime.now();
+                    String dateTimeNow = now.format(formatter);
+                    if(sqlite.isLoginSuccessful(username, hashedPassword)){
+                        sqlite.addLogs("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[SUCCESS] Password Verficiation of User %s OK", username), dateTimeNow);
+                        return true;
+                    }
+                    else throw new Exception("Wrong Password!");
+                } catch (Exception ex){
+                    this.logAction("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[FAIL] Password Verficiation of User %s failed due to %s", username, ex.getMessage()));
+                    JOptionPane.showMessageDialog(this, String.format("Wrong Password!"), "Verification Failed", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                    return false;
+                }
+            }
+
+        } catch(Exception e){
+            e.printStackTrace();
+            this.logAction("VERIFY_PASSWORD", "SESSIONID: " + this.session, String.format("[FAIL] Server Failure due to %s", e));
+        }
+
+        return false;
+    }
+
+    private void logAction(String event, String username, String desc){
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        sdf.setTimeZone(TimeZone.getDefault());
+        String date = sdf.format(new Date());
+
+        this.sqlite.addLogs(event, username, desc, date);
+    }
+
+    public void disablePurchaseButton(){
+        purchaseBtn.setVisible(false);
+    }
+    
+    public void disableAddProductButton(){
+        addBtn.setVisible(false);
+    }
+    
+    public void disableEditProductButton(){
+        editBtn.setVisible(false);
+    }
+    
+    public void disableDeleteProductButton(){
+        deleteBtn.setVisible(false);
+    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBtn;
