@@ -275,7 +275,6 @@ public class MgmtUser extends javax.swing.JPanel {
                 
                 if(this.verifyUser()){
                     String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
-                    System.out.println(tableModel.getValueAt(table.getSelectedRow(), 0));
 
                      try {
 
@@ -298,8 +297,6 @@ public class MgmtUser extends javax.swing.JPanel {
         
         if(table.getSelectedRow() >= 0){
             String state = "lock";
-            System.out.println(tableModel.getColumnName(3) + ": " + 
-                   tableModel.getValueAt(table.getSelectedRow(), 3) + "");
             
             String locked = tableModel.getValueAt(table.getSelectedRow(), 4) + "";
             if(!locked.equals("0")){
@@ -312,8 +309,6 @@ public class MgmtUser extends javax.swing.JPanel {
                 if(this.verifyUser()){
                     
                     String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
-                    System.out.println(username);
-
                     if(state.equals("lock")){
                         try {
                             this.sqlite.lockUser(username);
@@ -365,9 +360,6 @@ public class MgmtUser extends javax.swing.JPanel {
                 String username = tableModel.getValueAt(table.getSelectedRow(), 0) + "";
                 String passText = new String(password.getPassword());
                 String confText = new String(confpass.getPassword());
-
-                System.out.println(confpass.getPassword());
-                System.out.println(password.getPassword());
 
                 if(!hasEmptyFields(passText, confText)){
                     password.setText("");
